@@ -37,6 +37,12 @@ camara   = 35;           // camara util (aloja el manguito o el racor)
 fondo    = 4;            // espesor del fondo
 
 /* [Tapon A - entrada] */
+// El agua no cae por un solo agujero sino por una placa perforada: el
+// chorro se rompe en gotas y se airea. No es un adorno: con 0.34 L/min y
+// 4 lechugas adultas el oxigeno aportado (61 mg/h) iguala justo la demanda
+// (60 mg/h), asi que el agua tiene que entrar saturada. Ver analisis_bomba.py
+aireador_n = 6;          // agujeros perifericos (mas uno central)
+aireador_d = 5;          // diametro de cada agujero
 boquilla_d = 32;         // Ø EXTERIOR de la boquilla del Modulo 1
 manguito_h = 15;         // vuelo del manguito sobre la generatriz del tubo
 // La profundidad de encaje NO se fija a mano: se deriva del hombro de
@@ -45,6 +51,12 @@ manguito_h = 15;         // vuelo del manguito sobre la generatriz del tubo
 // la camara y generaba una degeneracion (solido no valido).
 
 /* [Tapon B - salida / rebose] */
+// Respiradero: sin el, el canal queda estanco y las raices aereas (las que
+// quedan por encima de la lamina) no tienen renovacion de aire. Es lo que
+// da autonomia durante las calmas: el agua del canal se queda sin oxigeno
+// en unos 6 minutos, y a partir de ahi la planta respira por arriba.
+respiradero_d = 8;
+respiradero_h = 18;
 nivel_agua = 25;         // lamina de agua sobre la base interior del tubo
 racor_int_d= 12;         // paso libre del racor de salida
 racor_l    = 28;         // vuelo del racor
@@ -80,6 +92,7 @@ assert(manguito_p >= 12, "Encaje de la boquilla demasiado corto: sube manguito_h
 echo(str("Tapon: L=", largo, " casquillo Øint=", casq_int_d, " Øext=", casq_ext_d));
 echo(str("Tapon B: eje del racor a z=", z_racor,
          " (lamina de agua de ", nivel_agua, " mm)"));
+echo(str("Aireador: ", aireador_n + 1, " agujeros de ", aireador_d, " mm"));
 echo(str("Boca del manguito a ", z_manguito, " mm sobre el eje del canal; ",
          "la boquilla del Modulo 1 debe terminar a ", z_manguito - manguito_p,
          " mm sobre ese eje."));
@@ -122,11 +135,19 @@ module tapon_a() {
             translate([x_manguito, 0, 0])
                 cylinder(d = manguito_ext_d, h = z_manguito);
         }
-        // Encaje de la boquilla + paso libre hacia la camara
-        translate([x_manguito, 0, z_manguito - manguito_p])
+        // Encaje de la boquilla
+        translate([x_manguito, 0, z_hombro])
             cylinder(d = manguito_int_d, h = manguito_p + 0.01);
-        translate([x_manguito, 0, 0])
-            cylinder(d = manguito_int_d - 2 * pared, h = z_manguito - manguito_p + 0.01);
+        // Placa aireadora: rompe el chorro en gotas al entrar en la camara
+        translate([x_manguito, 0, 0]) {
+            translate([0, 0, cam_int_d / 2 - 6])
+                cylinder(d = aireador_d, h = z_hombro - cam_int_d / 2 + 6.01);
+            for (i = [0 : aireador_n - 1])
+                rotate([0, 0, i * 360 / aireador_n])
+                    translate([8, 0, cam_int_d / 2 - 6])
+                        cylinder(d = aireador_d,
+                                 h = z_hombro - cam_int_d / 2 + 6.01);
+        }
         // La camara se vacia despues del manguito para dejarlo hueco
         tubo_x(cam_int_d, encaje, camara);
     }
@@ -145,12 +166,19 @@ module racor() {
 }
 
 module tapon_b() {
+    x_resp = encaje + camara / 2;
     difference() {
         union() {
             cuerpo();
             // Racor axial a la altura de rebose
             translate([largo, 0, z_racor]) rotate([0, 90, 0]) racor();
+            // Respiradero
+            translate([x_resp, 0, 0])
+                cylinder(d = respiradero_d + 2 * pared,
+                         h = cam_ext_d / 2 + respiradero_h);
         }
+        translate([x_resp, 0, 0])
+            cylinder(d = respiradero_d, h = cam_ext_d / 2 + respiradero_h + 1);
         // Paso del rebose: atraviesa el fondo
         translate([encaje + camara - 6, 0, z_racor]) rotate([0, 90, 0])
             cylinder(d = racor_int_d, h = fondo + racor_l + 8);

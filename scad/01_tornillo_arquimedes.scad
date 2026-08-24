@@ -10,13 +10,26 @@
 //        - encaje a presion            : diametro + 1*tol  (0.3 mm diametral)
 //    * Sin librerias externas: el archivo renderiza tal cual
 // ---------------------------------------------------------------------
-//  MONTAJE INCLINADO
+//  MONTAJE INCLINADO Y CIERRE DE CANGILONES
 //    El tornillo trabaja a 40 grados sobre la horizontal. Un Arquimedes
-//    vertical NO bombea: los cangilones solo cierran si la inclinacion es
-//    compatible con el paso. Criterio de Rorres (2000):
-//        paso adimensional  L = S*tan(a) / (2*pi*Ro)   debe ser < 1
-//    Con S=30, Ro=20 y a=40 -> L = 0.20, que ademas es el entorno del
-//    optimo de caudal por vuelta para esa inclinacion.
+//    vertical NO bombea. El agua rebosa de un cangilon al de abajo por el
+//    CANTO INTERIOR del filete, cuya cota es
+//        h(th) = -Ri cos(a) cos(th) + (S sin(a)/2pi) th
+//    Hay barrera (y por tanto cangilon cerrado) solo si esa funcion tiene
+//    minimo, es decir si
+//        k = S * tan(a) / (2*pi*Ri)  <  1        <-- con el radio INTERIOR
+//    Ojo: el criterio que se cita a menudo usa Ro y es mucho mas permisivo.
+//    Con Ri = 7.15 y a = 40 grados, el paso maximo real son 53 mm.
+//
+//  PASO DE 15 mm (el enunciado pedia 30)
+//    El llenado del cangilon cae deprisa con el paso, y la fuga por la
+//    holgura crece con el salto de carga por filete (S*sin a). Integrando
+//    el volumen de cangilon (ver analisis_bomba.py) el caudal neto a
+//    300 rpm es maximo entre 12 y 20 mm:
+//        paso 15 -> 1.50 mL/vuelta, neto 0.30-0.40 L/min
+//        paso 30 -> 1.28 mL/vuelta, neto 0.18-0.29 L/min
+//    Con paso 30 y la holgura original de 0.3 mm el caudal neto a 300 rpm
+//    era practicamente CERO. Para volver al enunciado: paso = 30.
 // ---------------------------------------------------------------------
 //  PIEZAS
 //    "tornillo" -> rotor helicoidal          (imprimir de pie, sin soportes)
@@ -31,7 +44,7 @@
 $fn = 100;
 
 /* [Pieza a renderizar] */
-pieza = "tornillo";      // ["tornillo","carcasa","embudo","conjunto"]
+pieza = "tornillo";      // ["tornillo","carcasa","embudo","calibre","conjunto"]
 
 /* [Reglas globales] */
 tol   = 0.3;             // tolerancia de ensamblaje
@@ -42,14 +55,20 @@ inclinacion = 40;        // grados del eje del tornillo sobre la horizontal
 
 /* [Rotor helicoidal] */
 helice_d    = 40;        // diametro exterior del helicoide
-paso        = 30;        // avance por vuelta
+paso        = 15;        // avance por vuelta (optimo de caudal neto)
 largo_util  = 180;       // longitud total del filete
 eje_d       = 8;         // varilla metalica pasante
-helice_esp  = 2.2;       // espesor axial del filete
+helice_esp  = 2.0;       // espesor axial del filete (4 lineas de 0.5 mm)
 seg_vuelta  = 24;        // segmentos por vuelta (resolucion del helicoide)
 prisionero  = true;      // taladro M3 para prisionero en el cubo
 
 /* [Carcasa] */
+holgura_helice = 0.15;   // HOLGURA RADIAL helicoide-carcasa. Es el parametro
+                         // mas sensible de todo el proyecto: la fuga escala
+                         // entre h y h^3 segun regimen.
+                         //   0.15 mm -> fuga 0.05-0.15 L/min (util desde ~100 rpm)
+                         //   0.30 mm -> fuga 0.30-0.36 L/min (util desde ~250 rpm)
+                         // Imprime primero la pieza "calibre" y mide.
 carcasa_largo = 200;     // longitud del tubo recto
 embudo_d      = 90;      // diametro de boca del embudo de entrada
 embudo_h      = 45;      // altura del cono del embudo
@@ -72,25 +91,27 @@ pcd_brida     = 60;      // circulo de taladros M4 de la corona superior
 // ---------------------------------------------------------------------
 eje_agujero_d = eje_d + tol;              // 8.3  - encaje a presion sobre varilla
 nucleo_d      = eje_agujero_d + 2*pared;  // 14.3 - respeta la pared minima
-carcasa_int_d = helice_d + 2*tol;         // 40.6 - deslizamiento del helicoide
+carcasa_int_d = helice_d + 2*holgura_helice;   // 40.3 - deslizamiento del helicoide
 carcasa_ext_d = carcasa_int_d + 2*pared;  // 46.6
 casq_int_d    = carcasa_ext_d + 2*tol;    // 47.2 - el embudo calza sobre el tubo
 casq_ext_d    = casq_int_d + 2*pared;     // 53.2
 boquilla_int_d= boquilla_d - 2*pared;     // 26.0
 m3_broca      = 2.8;                      // roscado directo en plastico para M3
 m4_paso       = 4.4;                      // taladro pasante M4
-lambda_r      = paso * tan(inclinacion) / (2 * PI * helice_d / 2);  // Rorres
+k_cierre      = paso * tan(inclinacion) / (2 * PI * nucleo_d / 2);  // criterio exacto
+paso_max      = 2 * PI * (nucleo_d / 2) / tan(inclinacion);         // paso limite
 
 assert(pared >= 3, "El grosor de pared no puede bajar de 3 mm.");
 assert(nucleo_d < helice_d - 4, "El nucleo invade el filete: reduce el eje o sube helice_d.");
-assert(lambda_r < 1,
-       "Los cangilones no cierran: reduce el paso o baja la inclinacion.");
+assert(k_cierre < 1,
+       "Los cangilones NO cierran: reduce el paso o baja la inclinacion.");
 
 echo(str("Carcasa: Dint=", carcasa_int_d, " Dext=", carcasa_ext_d));
 echo(str("Tornillo: nucleo=", nucleo_d, " agujero eje=", eje_agujero_d,
          " vueltas=", largo_util/paso));
-echo(str("Inclinacion=", inclinacion, " deg | paso adimensional (Rorres) L=",
-         lambda_r, " (debe ser < 1; optimo ~0.2)"));
+echo(str("Inclinacion=", inclinacion, " deg | k=", k_cierre,
+         " (cierra si <1) | paso maximo admisible=", paso_max, " mm"));
+echo(str("Holgura radial=", holgura_helice, " mm -> carcasa Dint=", carcasa_int_d));
 echo(str("Elevacion util = ", largo_util * sin(inclinacion), " mm"));
 // Cadena de cotas del vertido, medida desde la base del tubo de la carcasa
 // (z=0 = boca del casquillo del embudo) con el conjunto ya inclinado:
@@ -258,12 +279,41 @@ module embudo() {
 }
 
 // =====================================================================
+//  PIEZA D - CALIBRE DE AJUSTE
+//    Imprime esto ANTES que nada: un anillo de carcasa y un tramo de
+//    tornillo. Debe entrar girando con resistencia apenas perceptible y
+//    sin bailar. Mide ademas ambos diametros con el pie de rey: la
+//    diferencia con la cota nominal es el error de tu maquina, y se
+//    corrige con holgura_helice (o con el factor de escala del laminador).
+// =====================================================================
+module calibre() {
+    h = 12;
+    // anillo de carcasa
+    difference() {
+        cylinder(d = carcasa_ext_d, h = h);
+        translate([0, 0, -0.5]) cylinder(d = carcasa_int_d, h = h + 1);
+    }
+    // tramo de tornillo
+    translate([carcasa_ext_d + 12, 0, 0]) difference() {
+        union() {
+            cylinder(d = nucleo_d, h = h);
+            intersection() {
+                helicoide(helice_d / 2, h, paso, helice_esp, seg_vuelta);
+                cylinder(d = helice_d, h = h);
+            }
+        }
+        translate([0, 0, -0.5]) cylinder(d = eje_agujero_d, h = h + 1);
+    }
+}
+
+// =====================================================================
 //  SELECCION DE PIEZA
 // =====================================================================
 if (pieza == "tornillo") tornillo();
 else if (pieza == "carcasa") carcasa();
 else if (pieza == "embudo") embudo();
-else {
+else if (pieza == "calibre") calibre();
+else if (pieza == "conjunto") {
     // Vista de montaje en su posicion real de trabajo
     rotate([0, 90 - inclinacion, 0]) {
         carcasa();

@@ -43,7 +43,10 @@ dren_d     = 6;          // taladro central de drenaje
 
 /* [Plantilla de taladro] */
 tubo_ext_d = 75;
-paso_vasos = 100;        // separacion entre vasos en el canal
+paso_vasos = 150;        // separacion entre vasos en el canal.
+                         // 150 mm para lechuga (4 plantas por tramo de 600 mm,
+                         // que es el limite de oxigeno con este caudal);
+                         // 100-120 mm sirve para albahaca y hoja pequeña.
 
 // ---------------------------------------------------------------------
 //  COTAS DERIVADAS

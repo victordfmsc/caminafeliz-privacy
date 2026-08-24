@@ -10,6 +10,7 @@ render() {   # render <archivo.scad> <pieza>
 render 01_tornillo_arquimedes.scad tornillo
 render 01_tornillo_arquimedes.scad carcasa
 render 01_tornillo_arquimedes.scad embudo
+render 01_tornillo_arquimedes.scad calibre
 render 02_turbina_savonius.scad    rotor
 render 02_turbina_savonius.scad    disco_sup
 render 02_turbina_savonius.scad    disco_medio

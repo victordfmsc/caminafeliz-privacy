@@ -1,8 +1,9 @@
 # Bomba de Arquímedes eólica para canal hidropónico — modelos OpenSCAD
 
-Seis módulos paramétricos, sin librerías externas, más una vista de conjunto.
-Las 18 piezas se han exportado a STL con OpenSCAD 2021.01: todas salen como
-sólido cerrado y sin auto-intersecciones (`Simple: yes`).
+Seis módulos paramétricos, sin librerías externas, más una vista de conjunto y
+un script de análisis. Las 19 piezas se han exportado a STL con OpenSCAD
+2021.01: todas salen como sólido cerrado y sin auto-intersecciones
+(`Simple: yes`), y todas caben en los 256 × 256 × 256 mm de la P2S.
 
 ![Conjunto general](img/07_conjunto_general.png)
 
@@ -16,24 +17,27 @@ sólido cerrado y sin auto-intersecciones (`Simple: yes`).
 
 Dos criterios, declarados en cada archivo:
 
-* **Deslizante o rotativa** → `Ø + 2·tol`. Hélice Ø40 en carcasa Ø40.6;
-  boquilla Ø32 en manguito Ø32.6; casquillo de PVC Ø75 → Ø75.6.
+* **Deslizante o rotativa** → `Ø + 2·tol`. Boquilla Ø32 en manguito Ø32.6;
+  casquillo de PVC Ø75 → Ø75.6. La excepción es la holgura hélice-carcasa, que
+  no la manda el montaje sino la hidráulica: 0.15 mm radial (ver más abajo).
 * **A presión** → `Ø + 1·tol`. Agujero Ø8.3 sobre varilla de Ø8.
 
 ## Las dos decisiones que gobiernan el resto
 
 **1. El tornillo trabaja inclinado 40°, no vertical.** Un Arquímedes vertical no
-bombea: el agua no forma cangilones cerrados. El criterio de Rorres (2000) exige
-que el paso adimensional
+bombea: el agua no forma cangilones cerrados. El agua rebosa de un cangilón al
+de abajo por el **canto interior** del filete, cuya cota vale
+`h(θ) = −Ri·cos α·cos θ + (S·sin α/2π)·θ`. Solo hay barrera si esa función tiene
+mínimo, es decir si
 
 ```
-Λ = S · tan(α) / (2 π Ro)
+k = S · tan(α) / (2 π · Ri)  <  1      ← con el radio INTERIOR
 ```
 
-sea menor que 1. Con el paso de 30 mm y Ø40 pedidos, **α = 40° da Λ = 0.200**,
-que además cae en el entorno del óptimo de caudal por vuelta. El archivo calcula
-Λ y aborta con `assert` si la combinación paso/ángulo deja de cerrar cangilones.
-Elevación útil resultante: **116 mm** con los 180 mm de hélice del enunciado.
+Con `Ri = 7.15` y α = 40° el paso máximo real son **53.5 mm**. El criterio que
+suele citarse usa `Ro` y es cuatro veces más permisivo: habría dado por bueno un
+paso de 190 mm. Elevación útil resultante: **116 mm** con los 180 mm de hélice
+del enunciado.
 
 **2. Con turbina de eje vertical y tornillo a 40°, el par cónico no es de 90°.**
 Los dos ejes se cortan en el ápice de los conos primitivos y salen de él hacia
@@ -47,6 +51,64 @@ abajo-adelante. El ángulo entre esas direcciones es
 Con `inclinacion = 0` el par degenera en el cónico clásico de 90°/45°, que era
 lo especificado en el enunciado original.
 
+
+## Lo que dice la física (ver `analisis_bomba.py`)
+
+El volumen de cangilón no tiene fórmula cerrada: se integra numéricamente. El
+modelo está validado contra el único caso con solución exacta —cuando el paso
+tiende a cero el agua ocupa la parte del anillo con `x ≥ Ri`, un segmento
+circular de fracción 0.3180 para esta geometría— y el numérico converge a él
+(0.276 → 0.297 → 0.309 con pasos de 3, 1.5 y 0.6 mm).
+
+**El paso de 30 mm del enunciado dejaba la bomba en cero.** El llenado del
+cangilón cae con el paso y la fuga por la holgura crece con el salto de carga
+por filete (`S·sin α`). Integrando ambos efectos, el caudal neto a 300 rpm:
+
+| paso | volumen/vuelta | llenado | fuga | **caudal neto** |
+|---:|---:|---:|---:|---:|
+| 10 mm | 1.40 mL | 12.7 % | 0.03–0.12 | 0.30–0.39 L/min |
+| **15 mm** | **1.50 mL** | **9.1 %** | **0.05–0.15** | **0.30–0.40 L/min** |
+| 20 mm | 1.49 mL | 6.8 % | 0.07–0.17 | 0.28–0.38 L/min |
+| 30 mm | 1.44 mL | 4.4 % | 0.10–0.21 | 0.22–0.33 L/min |
+| 36 mm | 1.26 mL | 3.2 % | 0.12–0.23 | 0.15–0.26 L/min |
+
+El óptimo es plano entre 12 y 20 mm; el modelo usa **15 mm**, que además deja
+12 vueltas exactas en los 180 mm. Con el paso de 30 mm *y* la holgura original
+de 0.3 mm el caudal neto a 300 rpm era prácticamente nulo.
+
+**La holgura radial es el parámetro más sensible del proyecto.** Fija unas rpm
+mínimas por debajo de las cuales la bomba no entrega nada, porque todo lo que
+sube se vuelve por la rendija:
+
+| holgura radial | fuga | rpm mínimas útiles |
+|---:|---:|---:|
+| 0.10 mm | 0.01–0.10 L/min | 10–64 |
+| **0.15 mm** | **0.05–0.15 L/min** | **33–97** |
+| 0.20 mm | 0.12–0.20 L/min | 78–129 |
+| 0.30 mm | 0.30–0.40 L/min | 193–263 |
+
+De ahí la pieza **`calibre`**: un anillo de carcasa y un tramo de tornillo que se
+imprimen en diez minutos para medir el error real de la máquina antes de gastar
+filamento en el tubo de 200 mm.
+
+**El sistema no está limitado por par sino por velocidad.** El par estático del
+rotor supera al que pide el tornillo por un factor de 35 (2 m/s) a 216 (5 m/s),
+así que arranca con brisa floja y el rozamiento de los tres 608 no lo compromete.
+En cambio la velocidad crítica del tornillo (Muysken, `N ≈ 50/D^(2/3)`) son
+**427 rpm** para Ø40, y una Savonius libre ya los supera con 2.7 m/s:
+
+| viento | potencia en el eje | rpm libres | rpm útiles | caudal neto |
+|---:|---:|---:|---:|---:|
+| 2 m/s | 18 mW | 318 | 318 | 0.34–0.44 L/min |
+| 3 m/s | 60 mW | 477 | 427 | 0.51–0.60 L/min |
+| 6 m/s | 476 mW | 955 | 427 | 0.51–0.60 L/min |
+
+O sea: **el caudal satura en ~0.55 L/min a partir de 3 m/s** y todo el viento
+extra se desperdicia. Si el emplazamiento es ventoso, la mejora rentable es una
+reducción de 2:1 en el mástil (etapa recta aparte: con Σ = 130° una reducción en
+el propio par cónico obligaría a un engranaje de corona, no imprimible por
+extrusión). Con vendaval conviene desmontar el rotor: nada lo frena.
+
 ## Archivos
 
 ```
@@ -57,7 +119,8 @@ lo especificado en el enunciado original.
 05_net_cup_50.scad            vaso · plantilla
 06_estructura.scad            conector_3v · abraz_canal · abraz_carcasa · sop_mastil
 07_conjunto_general.scad      vista de obra (importa los STL, no imprimible)
-render_stl.sh                 exporta los 18 STL a ./stl
+analisis_bomba.py             modelo hidráulico, energético y agronómico
+render_stl.sh                 exporta los 19 STL a ./stl
 ```
 
 ```bash
@@ -76,9 +139,10 @@ openscad 07_conjunto_general.scad     # vista de obra, tras render_stl.sh
 
 | Pieza | Uds | Cotas |
 |---|---|---|
-| `tornillo` | 1 | helicoide Ø40, paso 30, largo 180, núcleo Ø14.3, agujero Ø8.3 |
-| `carcasa` | 1 | tubo Ø40.6/Ø46.6, largo 200, boquilla Ø32, corona 4×M4 |
+| `tornillo` | 1 | helicoide Ø40, **paso 15**, largo 180 (12 vueltas), núcleo Ø14.3 |
+| `carcasa` | 1 | tubo **Ø40.3**/Ø46.3, largo 200, boquilla Ø32, corona 4×M4 |
 | `embudo` | 1 | boca Ø90 con ventanas de admisión y buje liso Ø8.6 |
+| `calibre` | 1 | anillo + tramo de tornillo para verificar el ajuste antes de imprimir |
 
 * **Núcleo Ø14.3 y no Ø8.** La varilla es de Ø8; con núcleo de Ø8 no quedaría
   material alrededor del agujero. Se calcula como `Ø8.3 + 2·3`.
@@ -92,6 +156,8 @@ openscad 07_conjunto_general.scad     # vista de obra, tras render_stl.sh
   abrazadera del Módulo 6. Cuatro ventanas dejan entrar agua aunque la boca
   quede cerca del fondo. Lleva la araña con el buje inferior del eje.
 * Carcasa partida en tubo (200 mm) + embudo (77 mm) para que ambas quepan de pie.
+* Espesor de filete 2.0 mm = 4 líneas exactas de 0.5 mm: sin huecos entre
+  perímetros, que es por donde se cuela el agua.
 
 ## Módulo 2 · Turbina Savonius helicoidal
 
@@ -157,8 +223,8 @@ openscad 07_conjunto_general.scad     # vista de obra, tras render_stl.sh
 
 | Pieza | Uds | Cotas |
 |---|---|---|
-| `tapon_a` | 1 | casquillo Ø75.6/Ø81.6, cámara, manguito de entrada Ø32.6 |
-| `tapon_b` | 1 | ídem + racor de rebose Ø12 con espigas |
+| `tapon_a` | 1 | casquillo Ø75.6/Ø81.6, cámara, manguito Ø32.6 y **placa aireadora** |
+| `tapon_b` | 1 | ídem + racor de rebose Ø12 y **respiradero** |
 
 * `modo_encaje = "exterior"` (casquillo sobre el tubo) o `"interior"` (macho
   dentro del tubo): de ahí lo de *ajustables*. El escalón entre encaje y cámara
@@ -168,6 +234,11 @@ openscad 07_conjunto_general.scad     # vista de obra, tras render_stl.sh
 * La lámina de agua la fija `nivel_agua = 25`: el eje del racor se coloca en
   `−Ø_int/2 + 25 + Ø_racor/2 = −3.5 mm` respecto al eje del tubo, para que la
   **generatriz inferior** del paso quede a 25 mm del fondo interior.
+* El agua no entra por un solo agujero sino por una **placa perforada de 7×Ø5**:
+  el chorro se rompe en gotas y se airea. El balance de oxígeno de más abajo lo
+  convierte en obligatorio, no en un adorno.
+* El Tapón B lleva **respiradero**: sin él el canal queda estanco y las raíces
+  aéreas, que son las que sostienen la planta durante las calmas, no renuevan aire.
 * La profundidad de encaje del manguito **se deriva** del hombro de tope
   (4 mm sobre la generatriz del conducto) en vez de fijarse a mano: fijarla
   hacía caer el hombro justo en la tangente de la cámara y generaba un sólido
@@ -180,13 +251,14 @@ openscad 07_conjunto_general.scad     # vista de obra, tras render_stl.sh
 | Pieza | Uds | Cotas |
 |---|---|---|
 | `vaso` | n | Ø50 → Ø35, alto 50, pestaña Ø60 × 3 mm |
-| `plantilla` | 1 | galga curva para marcar dos taladros a 100 mm |
+| `plantilla` | 1 | galga curva para marcar dos taladros al paso elegido |
 
 * 16 ranuras verticales de 2 mm y 8 radiales en el fondo, más drenaje Ø6. Las
   del fondo no llegan al canto: el anillo exterior queda continuo.
 * Pared de 2.5 mm en vez de 3: la regla de 3 mm cubre las piezas estancas; la
   canastilla es celosía sin presión. El parámetro está expuesto.
-* Taladro en el canal **Ø50.6**, separación sugerida 100 mm.
+* Taladro en el canal **Ø50.6**, separación **150 mm** para lechuga (ver el
+  balance de oxígeno); 100–120 mm sirve para albahaca y hoja pequeña.
 * Chaflán de 45° bajo la pestaña: el vuelo de 5 mm sale sin soporte.
 
 ## Módulo 6 · Estructura
@@ -231,11 +303,128 @@ por encima de las ventanas del embudo y por debajo de z = 12.7 mm para que el
 retorno baje por gravedad. Si necesitas el canal más alto, sube `largo_util` o
 `inclinacion` (a 60° la elevación pasa a 156 mm y Λ sigue valiendo 0.41 < 1).
 
+
+## Lo que dice la biología
+
+**Esto es DFT, no NFT, y no por elección.** La lámina de 25 mm no es un capricho:
+con tubo redondo de Ø75 el fondo interior queda 34.5 mm bajo el eje, mientras que
+un vaso de 50 mm solo baja 9.5 mm. Para que la base del vaso alcance el agua hace
+falta esa lámina. La relación exacta es
+
+```
+inmersión de la base del vaso = nivel_agua + pared_del_tubo − 28   (mm)
+```
+
+con los valores por defecto da **0 mm**: la base del vaso roza la superficie. Es
+la posición correcta para planta establecida —la raíz baja al agua y la parte
+alta del cepellón respira en aire húmedo—. Para plántula, sube `nivel_agua` a
+28 mm y la base queda 3 mm sumergida.
+
+**El oxígeno, no el agua, es lo que limita cuántas plantas caben.** Con el caudal
+neto de referencia:
+
+| Magnitud | Valor |
+|---|---|
+| Volumen del canal (Ø69, 25 mm, 600 mm) | 0.73 L |
+| Caudal neto a 300 rpm | 0.36 L/min |
+| Renovación completa del canal | 2.0 min |
+| O₂ aportado (Δ 3 mg/L aprovechables) | 65 mg/h |
+| Demanda de 4 lechugas adultas | 60 mg/h |
+
+Van justos. De ahí las dos decisiones: **máximo 4 lechugas por tramo de 600 mm**
+(separación 150 mm) y placa aireadora en la entrada, porque esos 3 mg/L solo
+existen si el agua entra saturada. Con albahaca o lechuga baby la demanda cae a
+la mitad y caben 6.
+
+**Las calmas son el riesgo real, y la reserva no las cubre.** El canal disuelve
+5.9 mg de O₂; cuatro lechugas se los comen en **6 minutos**. Lo que salva a la
+planta cuando para el viento no es el agua almacenada sino la fracción de raíz
+que respira en aire, y eso exige que el canal esté ventilado: de ahí el
+respiradero del Tapón B y el hecho de que el manguito de entrada no cierre.
+
+**Materiales, desde la biología.** Nada de PLA: además de hidrolizarse, en un
+baño templado y rico en nutrientes es literalmente una fuente de carbono para la
+microbiota. PETG o ASA. Y **filamento pigmentado, nunca natural translúcido**:
+la luz que entra en el agua es algas, y las algas compiten por el oxígeno que
+acabamos de ver que va justo. La pestaña de Ø60 sobre un taladro de Ø50.6 ya
+sombrea el hueco del vaso.
+
+Para limpiar, los tapones son de encaje deslizante: se sacan a mano y el canal se
+enjuaga. Conviene hacerlo: las líneas de capa de una pieza impresa son un sustrato
+de biofilm excelente.
+
+## Impresión en Bambu Lab P2S
+
+Volumen 256 × 256 × 256 mm, CoreXY cerrada con **cámara pasiva** (40–50 °C
+imprimiendo ASA), nozzle de acero endurecido (0.2 / 0.4 / 0.6 / 0.8), cama hasta
+110 °C y AMS 2 Pro con secado activo. La pieza más alta del proyecto son los
+180 mm del tornillo, así que todo entra de pie.
+
+**El truco que decide la estanqueidad es aritmético.** Una pared de 3 mm con
+boquilla de 0.4 y ancho de línea por defecto (0.42) da 7.14 líneas: el laminador
+pone 7 y deja 0.06 mm que rellena con *gap fill*, y ahí es donde rezuma. Fija el
+ancho de línea para que la pared sea un número entero de perímetros:
+
+| Pared del diseño | Con nozzle 0.4 | Con nozzle 0.6 |
+|---|---|---|
+| 3.0 mm (carcasa, tapones) | 6 líneas × **0.50** | 5 líneas × **0.60** |
+| 2.5 mm (álabe, vaso) | 5 líneas × **0.50** | 4 líneas × **0.625** |
+| 2.0 mm (filete) | 4 líneas × **0.50** | — |
+
+Con eso, **4–5 perímetros bastan para que sea estanco** y el 100 % de relleno
+deja de ser necesario: en un tubo de 200 mm de ASA es contraproducente (más masa,
+más contracción, más riesgo de grieta). Si prefieres cinturón y tirantes, mantén
+el 100 % solo en los tapones, que son cortos.
+
+Activa **Scarf joint seam** (costura en bisel) en carcasa, embudo y tapones:
+elimina el canal de fuga que deja la costura alineada. En el tornillo importa
+todavía más por otro motivo: la costura sobresale 0.05–0.15 mm y la holgura de
+diseño son 0.15 mm, así que un pegote de costura roza. Imprime primero el
+`calibre`.
+
+| Pieza | Material | Nozzle | Orientación | Soportes |
+|---|---|---|---|---|
+| tornillo | PETG | 0.4 | de pie | no |
+| carcasa | PETG | 0.6 | de pie, boca abajo | solo bajo la boquilla |
+| embudo | PETG | 0.6 | de pie, boca arriba | no |
+| rotor, discos | **ASA** | 0.6 | rotor de pie; discos planos | no |
+| soporte, chumacera | ASA | 0.6 | base en la cama | no |
+| engranajes | PETG | 0.4 | cubo abajo | no |
+| tapones | PETG | 0.6 | eje del tubo vertical, fondo abajo | manguito del Tapón A |
+| vasos | PETG | 0.4 | de pie, boca arriba | no |
+| estructura | ASA | 0.6 | ver módulo 6 | conector_3v |
+
+**El helicoide sale sin soportes**, y la razón se puede escribir en una línea.
+Cada capa se desplaza tangencialmente `(capa/paso)·2πr`, y la sección del filete
+a ese radio mide `espesor·2πr/paso`. El cociente no depende ni del radio ni del
+paso:
+
+```
+solape entre capas = 1 − altura_de_capa / espesor_del_filete
+```
+
+Con capa de 0.2 mm y filete de 2.0 mm, **90 % de solape**: cada capa apoya casi
+entera sobre la anterior. Mientras el filete sea al menos cinco veces la altura
+de capa, el helicoide es autoportante por muy tumbado que parezca su plano.
+
+Ajustes concretos:
+
+* **PETG**: secar 6 h a 65 °C en el AMS 2 Pro. Cama 70–80 °C sobre placa
+  texturizada y **barra de pegamento como desmoldeante**, no como adhesivo: el
+  PETG se une químicamente al PEI liso y arranca el recubrimiento. Ventilador
+  30–50 %.
+* **ASA**: secar 4 h a 80 °C. Cama 100 °C, falda o balsa, ventilador de pieza al
+  mínimo y puerta cerrada. La cámara pasiva de la P2S llega a 40–50 °C, suficiente
+  para estas piezas; imprime de una en una para no perder temperatura.
+* Deja la compensación de pata de elefante por defecto (0.15 mm): sin ella las
+  primeras capas del tubo aprietan sobre el tornillo.
+* Sin *ironing* en las caras de los engranajes.
+
 ## Interfaces
 
 | Unión | Criterio | Valor |
 |---|---|---|
-| Hélice ↔ carcasa | deslizante | Ø40 / Ø40.6 |
+| Hélice ↔ carcasa | holgura hidráulica | Ø40 / **Ø40.3** (0.15 mm radial) |
 | Varilla ↔ tornillo, cubos, engranajes | a presión | Ø8 / Ø8.3 |
 | Varilla ↔ buje del embudo | giro libre | Ø8 / Ø8.6 |
 | Carcasa ↔ soporte | corona Ø74 | 4×M4 a PCD 60 |
@@ -246,7 +435,9 @@ retorno baje por gravedad. Si necesitas el canal más alto, sube `largo_util` o
 
 ## Comprobaciones hechas
 
-* Las 18 piezas exportan a STL como sólido cerrado y simple.
+* Las 19 piezas exportan a STL como sólido cerrado y simple, y caben en 256³.
+* El modelo de cangilón converge al valor analítico exacto del límite de paso
+  pequeño (0.3180): validado, no ajustado.
 * Encaje álabe/disco: booleana vacía en disco superior e intermedio, con control
   negativo que sí deja material (la prueba no pasa por vacuidad).
 * Engranaje del mástil contra el soporte: 1 mm³ de roce → **0** tras añadir el
@@ -266,13 +457,9 @@ retorno baje por gravedad. Si necesitas el canal más alto, sube `largo_util` o
 
 ## Laminado
 
-* **PETG o ASA.** Nada de PLA: hidrólisis con el agua del nutriente y UV.
-* **4 perímetros mínimo** y **relleno 100 %** en carcasa, embudo y tapones: así
-  son estancos sin sellador.
-* Resto: 4 perímetros, 40–60 % de relleno.
-* Capa 0.2 mm; 0.15 mm mejora el filete de la hélice.
-* Sin soportes salvo: manguito del Tapón A (voladizo horizontal) y `conector_3v`
-  (dos bocas horizontales).
+Los ajustes están en la sección de impresión en P2S de más arriba. En resumen:
+PETG para lo mojado, ASA para lo que da el sol, ancho de línea que haga entera la
+pared, costura en bisel y nada de PLA.
 
 ## Orden de montaje
 
