@@ -13,13 +13,23 @@
 //  pide soporte ligero solo bajo su vuelo.
 // ---------------------------------------------------------------------
 //  PIEZAS
-//    "tapon_a" | "tapon_b" | "conjunto"
+//    "tapon_a" | "tapon_b" | "racor" | "conjunto"
+//
+//  IMPRESION SIN SOPORTES
+//    El racor de rebose va SUELTO. Integrado obligaba a elegir entre
+//    apoyar el tapon sobre la punta del racor o puentear un fondo de
+//    Ø69: separandolo, el Tapon B se imprime como un vaso boca arriba y
+//    no lleva ni un gramo de soporte. La brida del racor asienta por
+//    DENTRO, contra la cara interior del fondo, asi que la presion del
+//    agua lo aprieta contra su asiento en vez de expulsarlo. Ademas la
+//    junta queda justo en la linea de agua, con carga practicamente
+//    nula. Solo el manguito del Tapon A necesita soporte.
 // =====================================================================
 
 $fn = 100;
 
 /* [Pieza a renderizar] */
-pieza = "tapon_a";       // ["tapon_a","tapon_b","conjunto"]
+pieza = "tapon_a";       // ["tapon_a","tapon_b","racor","conjunto"]
 
 /* [Reglas globales] */
 tol   = 0.3;
@@ -55,8 +65,13 @@ manguito_h = 15;         // vuelo del manguito sobre la generatriz del tubo
 // quedan por encima de la lamina) no tienen renovacion de aire. Es lo que
 // da autonomia durante las calmas: el agua del canal se queda sin oxigeno
 // en unos 6 minutos, y a partir de ahi la planta respira por arriba.
-respiradero_d = 8;
-respiradero_h = 18;
+// Son dos taladros a +-45 grados sobre la generatriz alta: asi no entra
+// lluvia de frente y, al imprimir el tapon con el eje vertical, quedan
+// como simples agujeros horizontales que no piden soporte.
+respiradero_d = 6;
+respiradero_a = 45;      // separacion angular respecto a la vertical
+brida_racor_d = 24;      // brida interior del racor
+brida_racor_e = 3;
 nivel_agua = 25;         // lamina de agua sobre la base interior del tubo
 racor_int_d= 12;         // paso libre del racor de salida
 racor_l    = 28;         // vuelo del racor
@@ -156,32 +171,43 @@ module tapon_a() {
 // =====================================================================
 //  TAPON B - SALIDA / REBOSE
 // =====================================================================
+// Racor de rebose SUELTO. Se introduce desde dentro del tapon antes de
+// montarlo sobre el tubo: la brida queda contra la cara interior del fondo
+// y el agua la aprieta contra su asiento.
 module racor() {
-    l_recto = racor_l - (racor_pua ? 9 : 0);
-    cylinder(d = racor_ext_d, h = l_recto);
-    if (racor_pua)
-        for (i = [0 : 2])
-            translate([0, 0, l_recto - 9 + i * 3])
-                cylinder(d1 = racor_ext_d + 3, d2 = racor_ext_d, h = 3);
+    paso_d = racor_int_d + 2 * pared;          // 18, atraviesa el fondo
+    l_pua  = racor_pua ? 9 : 0;
+    difference() {
+        union() {
+            cylinder(d = brida_racor_d, h = brida_racor_e);          // brida
+            cylinder(d = paso_d - tol, h = brida_racor_e + fondo);   // paso
+            translate([0, 0, brida_racor_e + fondo])
+                cylinder(d = racor_ext_d, h = racor_l - l_pua);
+            if (racor_pua)
+                for (i = [0 : 2])
+                    translate([0, 0, brida_racor_e + fondo + racor_l - l_pua + i * 3])
+                        cylinder(d1 = racor_ext_d + 3, d2 = racor_ext_d, h = 3);
+        }
+        translate([0, 0, -0.5])
+            cylinder(d = racor_int_d, h = brida_racor_e + fondo + racor_l + 1);
+    }
 }
 
 module tapon_b() {
-    x_resp = encaje + camara / 2;
+    x_resp = encaje + camara * 0.6;
     difference() {
-        union() {
-            cuerpo();
-            // Racor axial a la altura de rebose
-            translate([largo, 0, z_racor]) rotate([0, 90, 0]) racor();
-            // Respiradero
-            translate([x_resp, 0, 0])
-                cylinder(d = respiradero_d + 2 * pared,
-                         h = cam_ext_d / 2 + respiradero_h);
-        }
-        translate([x_resp, 0, 0])
-            cylinder(d = respiradero_d, h = cam_ext_d / 2 + respiradero_h + 1);
-        // Paso del rebose: atraviesa el fondo
-        translate([encaje + camara - 6, 0, z_racor]) rotate([0, 90, 0])
-            cylinder(d = racor_int_d, h = fondo + racor_l + 8);
+        cuerpo();
+        // Paso del racor a traves del fondo, a la altura de rebose
+        translate([encaje + camara - 1, 0, z_racor]) rotate([0, 90, 0])
+            cylinder(d = racor_int_d + 2 * pared + tol, h = fondo + 2);
+        // Asiento de la brida, por dentro
+        translate([encaje + camara - brida_racor_e, 0, z_racor]) rotate([0, 90, 0])
+            cylinder(d = brida_racor_d + tol, h = brida_racor_e + 0.01);
+        // Respiraderos
+        for (sy = [-1, 1])
+            rotate([respiradero_a * sy, 0, 0])
+                translate([x_resp, 0, 0])
+                    cylinder(d = respiradero_d, h = cam_ext_d);
     }
 }
 
@@ -190,9 +216,12 @@ module tapon_b() {
 // =====================================================================
 if (pieza == "tapon_a") tapon_a();
 else if (pieza == "tapon_b") tapon_b();
+else if (pieza == "racor") racor();
 else if (pieza == "conjunto") {
     color("SeaGreen") tapon_a();
     color("Teal") translate([420, 0, 0]) mirror([1, 0, 0]) tapon_b();
+    color("DarkCyan") translate([420 - encaje - camara + brida_racor_e, 0, z_racor])
+        rotate([0, 90, 0]) racor();
     // referencia: tramo de tubo PVC
     color("Gainsboro", 0.35)
         difference() {

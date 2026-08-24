@@ -120,12 +120,14 @@ extrusión). Con vendaval conviene desmontar el rotor: nada lo frena.
 06_estructura.scad            conector_3v · abraz_canal · abraz_carcasa · sop_mastil
 07_conjunto_general.scad      vista de obra (importa los STL, no imprimible)
 analisis_bomba.py             modelo hidráulico, energético y agronómico
-render_stl.sh                 exporta los 19 STL a ./stl
+render_stl.sh                 exporta los 20 STL a ./stl
+bandejas.py                   reparte las piezas en bandejas de la P2S
 ```
 
 ```bash
 openscad -o tornillo.stl -D 'pieza="tornillo"' 01_tornillo_arquimedes.scad
-./render_stl.sh                       # todas las piezas
+./render_stl.sh                       # todas las piezas -> ./stl
+python3 bandejas.py                   # -> stl/bandeja_1..3.stl, listas para laminar
 openscad 07_conjunto_general.scad     # vista de obra, tras render_stl.sh
 ```
 
@@ -391,6 +393,7 @@ diseño son 0.15 mm, así que un pegote de costura roza. Imprime primero el
 | soporte, chumacera | ASA | 0.6 | base en la cama | no |
 | engranajes | PETG | 0.4 | cubo abajo | no |
 | tapones | PETG | 0.6 | eje del tubo vertical, fondo abajo | manguito del Tapón A |
+| racor | PETG | 0.6 | brida sobre la cama | no |
 | vasos | PETG | 0.4 | de pie, boca arriba | no |
 | estructura | ASA | 0.6 | ver módulo 6 | conector_3v |
 
@@ -420,6 +423,64 @@ Ajustes concretos:
   primeras capas del tubo aprietan sobre el tornillo.
 * Sin *ironing* en las caras de los engranajes.
 
+
+## Plan de bandejas: todo el sistema en 3 impresiones
+
+`bandejas.py` no coloca a ojo. Lee los STL, aplica a cada pieza su rotación de
+impresión, y empaqueta las **siluetas reales** —la envolvente convexa de la
+planta, rasterizada a 1 mm y dilatada la mitad de la separación— en vez de las
+cajas envolventes. La diferencia no es cosmética: dos discos de Ø132 no caben
+lado a lado en 246 mm, pero **sí caben en diagonal**, y eso solo lo ve un
+empaquetador que trabaje con la forma. Con cajas salían 5 bandejas; con siluetas
+salen 3.
+
+Tres es además el mínimo alcanzable: la suma de las huellas da 2.45 bandejas, y
+la primera ya va al 89 %.
+
+| | Piezas | Altura | Ocupación | Material | Tiempo |
+|---|---|---|---|---|---|
+| **Bandeja 1** | calibre, embudo, disco medio, disco superior, engranaje, 2 racores, abrazadera de carcasa, soporte de mástil | 89 mm | 89 % | ~220 g | ~7 h |
+| **Bandeja 2** | **carcasa, tornillo**, rotor, chumacera, plantilla, vaso, 4 conectores | 200 mm | 83 % | ~460 g | ~15 h |
+| **Bandeja 3** | torreta, engranaje, tapón A, tapón B, 3 vasos, 2 abrazaderas de canal, 2 conectores | 92 mm | 73 % | ~430 g | ~13 h |
+
+Total ≈ **1.1 kg y 35 h**. El tiempo es una estimación con 10 mm³/s efectivos y
+capa de 0.2 mm; el material es cota superior, porque cuenta como macizo lo que el
+laminador rellenará al 15–25 % en las secciones gruesas.
+
+![Bandeja 1](img/bandeja_1.png) ![Bandeja 2](img/bandeja_2.png)
+
+**El orden importa y no es arbitrario.** El `calibre` va en la bandeja 1 y el
+tornillo y la carcasa en la 2: hay que medir el ajuste antes de imprimir las dos
+piezas que dependen de él. Por eso la bandeja 1 tampoco lleva ninguna pieza alta
+—acaba en unas 7 h y ya tienes la medida— mientras que la 2 es la larga.
+
+**Un solo material.** El reparto de arriba supone ASA para todo, y es la
+recomendación: es estable a UV *y* al agua (es el material de los tubos de
+saneamiento), y la cámara cerrada de la P2S es justo lo que necesita. Separar
+PETG para lo mojado y ASA para lo soleado obliga a partir cada bandeja por
+material y sube de 3 a 4–5 impresiones. Si no tienes buena ventilación —el ASA
+huele— usa PETG en todo y cuenta con cambiar el rotor cada dos o tres años.
+
+**Cómo laminarlo:**
+
+1. `./render_stl.sh && python3 bandejas.py`
+2. Importa `stl/bandeja_1.stl` en Bambu Studio. **No pulses auto-organizar**: la
+   colocación ya viene resuelta. Si la centra en la cama no pasa nada, las
+   posiciones relativas se mantienen.
+3. Botón derecho → *Split to objects* si quieres ajustes por pieza. Hace falta
+   en las bandejas 2 y 3: solo dos piezas del proyecto piden soporte —el Tapón A
+   por el manguito y el `conector_3v` por sus dos bocas horizontales— y conviene
+   activarlo únicamente en ellas. La bandeja 1 no lleva ninguna.
+4. Ancho de línea según la tabla de más arriba y costura en bisel.
+
+Si prefieres repartir el riesgo en vez de minimizar arranques, saca la carcasa y
+el tornillo a una bandeja propia: son 15 h de la bandeja 2 y un fallo a mitad se
+lleva por delante el rotor. Pasarías a 4 impresiones.
+
+Para cambiar el reparto —otro número de vasos, otro bastidor— edita la lista
+`PIEZAS` de `bandejas.py`: cantidad, rotación de impresión y si la pieza está
+atada a la primera bandeja o excluida de ella.
+
 ## Interfaces
 
 | Unión | Criterio | Valor |
@@ -435,7 +496,9 @@ Ajustes concretos:
 
 ## Comprobaciones hechas
 
-* Las 19 piezas exportan a STL como sólido cerrado y simple, y caben en 256³.
+* Las 20 piezas exportan a STL como sólido cerrado y simple, y caben en 256³.
+* El plan de bandejas se verifica por coordenadas: nada sale de la cama
+  (X e Y entre 7 y 244 mm) y ninguna silueta se solapa.
 * El modelo de cangilón converge al valor analítico exacto del límite de paso
   pequeño (0.3180): validado, no ajustado.
 * Encaje álabe/disco: booleana vacía en disco superior e intermedio, con control
