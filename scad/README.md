@@ -119,9 +119,12 @@ extrusión). Con vendaval conviene desmontar el rotor: nada lo frena.
 05_net_cup_50.scad            vaso · plantilla
 06_estructura.scad            conector_3v · abraz_canal · abraz_carcasa · sop_mastil
 07_conjunto_general.scad      vista de obra (importa los STL, no imprimible)
+08_montaje.scad               vistas paso a paso del montaje
 analisis_bomba.py             modelo hidráulico, energético y agronómico
+verificacion.py               comprueba que la cadena de cotas cierra
 render_stl.sh                 exporta los 20 STL a ./stl
 bandejas.py                   reparte las piezas en bandejas de la P2S
+infografia.py                 genera montaje.html, la guía de montaje
 ```
 
 ```bash
@@ -496,6 +499,10 @@ atada a la primera bandeja o excluida de ella.
 
 ## Comprobaciones hechas
 
+* `verificacion.py` corre 34 comprobaciones sobre los parámetros que devuelve el
+  propio OpenSCAD: ajustes, alineación de taladros, cotas de montaje del par
+  cónico, longitudes de varilla, cadena de cotas del vertido y ventana de nivel
+  del depósito. Todas pasan.
 * Las 20 piezas exportan a STL como sólido cerrado y simple, y caben en 256³.
 * El plan de bandejas se verifica por coordenadas: nada sale de la cama
   (X e Y entre 7 y 244 mm) y ninguna silueta se solapa.
@@ -523,6 +530,13 @@ atada a la primera bandeja o excluida de ella.
 Los ajustes están en la sección de impresión en P2S de más arriba. En resumen:
 PETG para lo mojado, ASA para lo que da el sol, ancho de línea que haga entera la
 pared, costura en bisel y nada de PLA.
+
+## Guía de montaje
+
+`infografia.py` genera **`montaje.html`**: la guía pieza a pieza, con las vistas
+de cada paso compuestas desde los STL reales, el inventario de las veinte piezas,
+los dos diagramas de cotas críticas y el acta de comprobación. Se regenera con
+`./render_stl.sh && python3 infografia.py`.
 
 ## Orden de montaje
 

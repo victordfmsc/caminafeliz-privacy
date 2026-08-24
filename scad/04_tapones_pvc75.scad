@@ -89,7 +89,12 @@ cam_int_d   = tubo_int_d;                      // 69
 cam_ext_d   = cam_int_d + 2 * pared;           // 75
 largo       = encaje + camara + fondo;         // 69
 
-manguito_int_d = boquilla_d + 2 * tol;         // 32.6 encaje deslizante
+// Esta union NO es una junta: el agua cae por gravedad dentro del manguito.
+// Con 0.3 mm de holgura la alineacion del canal habria que clavarla a decimas
+// (basta 1 grado de error en la inclinacion de la carcasa para desplazar la
+// boquilla 3 mm). Con 1 mm de holgura radial el canal se coloca a mano y la
+// boquilla admite 8 grados de desviacion sin tocar.
+manguito_int_d = boquilla_d + 2;               // 34, union de vertido
 manguito_ext_d = manguito_int_d + 2 * pared;   // 38.6
 z_manguito     = cam_ext_d / 2 + manguito_h;   // cota de la boca del manguito
 z_hombro       = cam_int_d / 2 + 4;            // tope de la boquilla

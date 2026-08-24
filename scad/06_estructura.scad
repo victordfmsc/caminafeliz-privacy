@@ -34,7 +34,8 @@ ranura   = 3;           // apertura de la ranura de apriete
 
 /* [Cargas] */
 canal_d     = 75;       // canal de PVC (Modulo 4)
-carcasa_d   = 46.6;     // exterior de la carcasa del tornillo (Modulo 1)
+carcasa_d   = 46.3;     // exterior de la carcasa del tornillo (Modulo 1):
+                        // helice 40 + 2*holgura 0.15 + 2*pared 3
 inclinacion = 40;       // grados de la carcasa sobre la horizontal
 nido_abrazo = 200;      // grados de abrazo del nido (>180 -> retiene a presion)
 

@@ -129,7 +129,7 @@ module plantilla() {
 // =====================================================================
 if (pieza == "vaso") vaso();
 else if (pieza == "plantilla") plantilla();
-else {
+else if (pieza == "conjunto") {
     color("DimGray", 0.35)
         difference() {
             translate([0, 0, -tubo_ext_d / 2]) rotate([0, 90, 0])

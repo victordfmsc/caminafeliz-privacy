@@ -1,0 +1,426 @@
+<title>Bomba de Arquímedes eólica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --ground:#f2f5f3; --surface:#ffffff; --surface-2:#e8edea; --surface-3:#dde5e1;
+  --ink:#15201e; --ink-2:#4f5f5b; --ink-3:#83918d;
+  --rule:#ccd6d2; --rule-2:#b5c3be;
+  --accent:#c94a15; --accent-2:#e8622a; --accent-soft:#fbeadf;
+  --water:#1d6688; --water-soft:#e2eef4;
+  --ok:#2a6b4f; --ok-soft:#e3efe9;
+  --shadow:0 1px 2px rgba(21,32,30,.06),0 8px 24px -12px rgba(21,32,30,.18);
+  --sans:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0e1413; --surface:#161e1c; --surface-2:#1d2725; --surface-3:#26312e;
+    --ink:#e7ede9; --ink-2:#a6b3ae; --ink-3:#75837e;
+    --rule:#2b3835; --rule-2:#3a4844;
+    --accent:#ff8a5c; --accent-2:#ff7a45; --accent-soft:#2c1a11;
+    --water:#63b3d6; --water-soft:#12262f;
+    --ok:#63bd92; --ok-soft:#12241c;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0e1413; --surface:#161e1c; --surface-2:#1d2725; --surface-3:#26312e;
+  --ink:#e7ede9; --ink-2:#a6b3ae; --ink-3:#75837e;
+  --rule:#2b3835; --rule-2:#3a4844;
+  --accent:#ff8a5c; --accent-2:#ff7a45; --accent-soft:#2c1a11;
+  --water:#63b3d6; --water-soft:#12262f;
+  --ok:#63bd92; --ok-soft:#12241c;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -14px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--serif); font-size:17px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1120px; margin:0 auto; padding:0 28px 96px}
+h1,h2,h3,h4{font-family:var(--sans); text-wrap:balance; margin:0}
+p{margin:0}
+img{max-width:100%; display:block}
+code{font-family:var(--mono); font-size:.88em; background:var(--surface-2);
+  padding:.1em .35em; border-radius:3px}
+em{font-style:italic}
+
+/* ---------- cajetin de plano ---------- */
+.cajetin{border-bottom:2px solid var(--ink); padding:44px 0 0}
+.cajetin h1{font-size:clamp(2.4rem,5.4vw,4rem); font-weight:700; letter-spacing:-.025em;
+  line-height:1.02}
+.cajetin .sub{font-family:var(--serif); font-size:1.12rem; color:var(--ink-2);
+  max-width:60ch; margin-top:14px}
+.tb{display:grid; grid-template-columns:repeat(4,1fr); gap:0; margin-top:34px;
+  border-top:1px solid var(--rule)}
+.tb div{padding:14px 16px 16px; border-right:1px solid var(--rule)}
+.tb div:last-child{border-right:0}
+.tb dt{font-family:var(--sans); font-size:.66rem; font-weight:600; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-3); margin:0 0 4px}
+.tb dd{margin:0; font-family:var(--mono); font-size:1.02rem; font-weight:500; color:var(--ink)}
+.tb .ok{color:var(--ok)}
+
+.hero{margin:0 -12px 0; padding:8px 0 0}
+.hero img{width:100%; border-radius:2px}
+.hero figcaption{font-family:var(--sans); font-size:.8rem; color:var(--ink-3);
+  border-top:1px solid var(--rule); padding-top:8px; margin-top:4px}
+
+/* ---------- secciones ---------- */
+section.bloque{margin-top:76px}
+.eyebrow{font-family:var(--sans); font-size:.68rem; font-weight:600; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--accent); margin-bottom:10px}
+h2{font-size:clamp(1.55rem,3vw,2.1rem); font-weight:700; letter-spacing:-.015em}
+.lede{max-width:66ch; color:var(--ink-2); margin-top:12px; font-size:1.06rem}
+
+/* ---------- cifras ---------- */
+.cifras{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:1px;
+  background:var(--rule); border:1px solid var(--rule); margin-top:28px}
+.cifra{background:var(--surface); padding:20px 20px 22px}
+.cifra b{display:block; font-family:var(--mono); font-size:1.85rem; font-weight:500;
+  letter-spacing:-.02em; color:var(--ink); font-variant-numeric:tabular-nums}
+.cifra b span{font-size:.9rem; color:var(--ink-3); font-weight:400}
+.cifra p{font-family:var(--sans); font-size:.78rem; font-weight:500; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--ink-3); margin-top:6px}
+.cifra small{display:block; font-family:var(--serif); font-size:.92rem; color:var(--ink-2);
+  margin-top:10px; text-transform:none; letter-spacing:0; line-height:1.45}
+
+/* ---------- diagramas ---------- */
+.diagrama{margin-top:32px; background:var(--surface); border:1px solid var(--rule);
+  padding:22px 22px 14px; overflow-x:auto}
+.diagrama svg{display:block; min-width:640px; width:100%; height:auto}
+.diagrama .pie{font-family:var(--sans); font-size:.8rem; color:var(--ink-3);
+  border-top:1px solid var(--rule); margin-top:14px; padding-top:10px}
+.svg-cota{font-family:"IBM Plex Mono",monospace; font-size:11px; fill:var(--ink-2)}
+.svg-lbl{font-family:"Archivo",sans-serif; font-size:12px; font-weight:600; fill:var(--ink)}
+.svg-mini{font-family:"Archivo",sans-serif; font-size:10.5px; fill:var(--ink-3)}
+
+/* ---------- inventario ---------- */
+.inventario{display:grid; grid-template-columns:repeat(auto-fill,minmax(228px,1fr));
+  gap:1px; background:var(--rule); border:1px solid var(--rule); margin-top:28px}
+.pieza{background:var(--surface); margin:0; padding:0; display:flex; flex-direction:column}
+.pieza img{background:var(--surface-2); width:100%; aspect-ratio:23/20; object-fit:cover}
+.pieza figcaption{padding:14px 16px 18px; display:flex; flex-wrap:wrap; gap:6px;
+  align-items:baseline}
+.pz-cant{font-family:var(--mono); font-size:.9rem; font-weight:600; color:var(--accent)}
+.pz-nom{font-family:var(--sans); font-size:.98rem; font-weight:600; letter-spacing:-.01em}
+.pz-mod{font-family:var(--mono); font-size:.68rem; color:var(--ink-3);
+  border:1px solid var(--rule-2); padding:1px 5px; border-radius:2px; margin-left:auto}
+.pieza p{flex-basis:100%; font-size:.92rem; line-height:1.45; color:var(--ink-2); margin-top:2px}
+
+/* ---------- pasos ---------- */
+.paso{display:grid; grid-template-columns:1.15fr .85fr; gap:34px; align-items:start;
+  padding:34px 0; border-top:1px solid var(--rule)}
+.paso:first-of-type{border-top:2px solid var(--ink)}
+.paso-img img{background:var(--surface); border:1px solid var(--rule); border-radius:2px}
+.paso-n{font-family:var(--mono); font-size:.78rem; font-weight:600; color:var(--accent);
+  letter-spacing:.08em}
+.paso h3{font-size:1.42rem; font-weight:600; letter-spacing:-.015em; margin:4px 0 0}
+.entra{font-family:var(--sans); font-size:.82rem; font-weight:500; color:var(--ink-3);
+  margin:8px 0 14px; padding-bottom:12px; border-bottom:1px solid var(--rule)}
+.paso-txt>p:not(.paso-n):not(.entra):not(.cota):not(.aviso){color:var(--ink-2)}
+.cota{margin-top:16px; font-family:var(--mono); font-size:.94rem; line-height:1.5;
+  color:var(--ink); background:var(--accent-soft); border-left:3px solid var(--accent-2);
+  padding:11px 14px}
+.cota span{display:block; font-family:var(--sans); font-size:.64rem; font-weight:600;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:3px}
+.aviso{margin-top:14px; font-size:.95rem; color:var(--ink-2); padding-left:16px;
+  border-left:2px solid var(--rule-2)}
+
+/* ---------- tabla de verificacion ---------- */
+.tabla{margin-top:26px; overflow-x:auto; border:1px solid var(--rule); background:var(--surface)}
+table{border-collapse:collapse; width:100%; min-width:600px; font-family:var(--sans);
+  font-size:.9rem}
+th,td{text-align:left; padding:9px 14px; border-bottom:1px solid var(--rule)}
+tr.grupo th{font-family:var(--sans); font-size:.68rem; font-weight:600; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3); background:var(--surface-2);
+  border-bottom:1px solid var(--rule-2); padding-top:12px; padding-bottom:10px}
+td.est{font-family:var(--mono); font-size:.72rem; font-weight:600; width:56px}
+td.est.si{color:var(--ok)}
+td.est.no{color:var(--accent)}
+td.val{font-family:var(--mono); font-size:.82rem; color:var(--ink-2);
+  font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:0}
+
+/* ---------- limites ---------- */
+.limites{display:grid; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); gap:22px;
+  margin-top:26px}
+.limite{background:var(--surface); border:1px solid var(--rule); border-top:3px solid var(--water);
+  padding:18px 20px 20px}
+.limite h4{font-size:1rem; font-weight:600; letter-spacing:-.01em}
+.limite p{font-size:.95rem; color:var(--ink-2); margin-top:8px; line-height:1.5}
+.limite .n{font-family:var(--mono); font-size:.9rem; color:var(--water); font-weight:500}
+
+footer{margin-top:80px; padding-top:22px; border-top:2px solid var(--ink);
+  font-family:var(--sans); font-size:.84rem; color:var(--ink-3);
+  display:flex; flex-wrap:wrap; gap:14px 28px}
+footer code{background:none; color:var(--ink-2); padding:0}
+
+@media (max-width:820px){
+  .tb{grid-template-columns:repeat(2,1fr)}
+  .tb div:nth-child(2n){border-right:0}
+  .tb div:nth-child(-n+2){border-bottom:1px solid var(--rule)}
+  .paso{grid-template-columns:1fr; gap:20px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="cajetin">
+  <h1>Bomba de Arquímedes eólica</h1>
+  <p class="sub">Montaje pieza a pieza de un sistema hidropónico accionado por viento.
+  Veinte piezas impresas, tres cotas que hay que clavar y una ventana de nivel de
+  23&nbsp;mm que decide si el invento funciona.</p>
+  <dl class="tb">
+    <div><dt>Piezas impresas</dt><dd>20 <span style="color:var(--ink-3)">· 3 bandejas</span></dd></div>
+    <div><dt>Comprobaciones</dt><dd class="ok">{{N_CHECKS}} · {{ESTADO}}</dd></div>
+    <div><dt>Caudal en régimen</dt><dd>0,5 L/min</dd></div>
+    <div><dt>Inclinación de trabajo</dt><dd>40°</dd></div>
+  </dl>
+  <figure class="hero">
+    <img src="{{HERO}}" alt="Vista general del sistema montado: rotor Savonius sobre mástil vertical, reenvío cónico, tornillo inclinado dentro del depósito y canal horizontal con vasos de cultivo">
+    <figcaption>Conjunto en posición de trabajo, compuesto desde los STL reales. El agua sube
+    por el tornillo, cae a plomo dentro del Tapón A y vuelve al depósito por el rebose.</figcaption>
+  </figure>
+</header>
+
+<section class="bloque">
+  <p class="eyebrow">Por qué funciona</p>
+  <h2>Cuatro números sostienen el diseño</h2>
+  <p class="lede">Un tornillo de Arquímedes no bombea por ser un tornillo: bombea si sus
+  cangilones cierran, si el caudal supera a la fuga y si la cadena de cotas deja el canal
+  por debajo de la descarga y por encima del depósito. Los tres se cumplen, con margen
+  medido.</p>
+
+  <div class="cifras">
+    <div class="cifra">
+      <b>0,280</b>
+      <p>Cierre de cangilones</p>
+      <small><em>k</em> = S·tan(α)/(2π·R<sub>i</sub>) debe ser &lt; 1. El criterio se
+      calcula con el radio <em>interior</em>: con el exterior daría por bueno un paso de
+      190&nbsp;mm cuando el máximo real son 54.</small>
+    </div>
+    <div class="cifra">
+      <b>0,5 <span>L/min</span></b>
+      <p>Caudal neto</p>
+      <small>1,53&nbsp;mL por vuelta menos la fuga por la holgura. Satura a partir de
+      3&nbsp;m/s porque el tornillo tiene su propia velocidad crítica en 427&nbsp;rpm.</small>
+    </div>
+    <div class="cifra">
+      <b>×35 – ×216</b>
+      <p>Margen de par</p>
+      <small>Par estático del rotor frente al que exige el tornillo, de 2 a 5&nbsp;m/s.
+      Arranca con brisa floja: el sistema está limitado por velocidad, no por fuerza.</small>
+    </div>
+    <div class="cifra">
+      <b>23 <span>mm</span></b>
+      <p>Ventana de nivel</p>
+      <small>Entre −10 y +12&nbsp;mm respecto a la base de la carcasa. Por debajo no coge
+      agua; por encima el retorno deja de bajar por gravedad.</small>
+    </div>
+  </div>
+</section>
+
+<section class="bloque">
+  <p class="eyebrow">Cadena de cotas</p>
+  <h2>Dónde cae cada nivel</h2>
+  <p class="lede">Todas las alturas están referidas a la base del tubo de la carcasa. La
+  geometría de la conexión —radio del canal, manguito y carrera de la boquilla— consume
+  unos 100&nbsp;mm de altura, y por eso el tornillo de 180&nbsp;mm no sobra: el mínimo
+  viable son 157.</p>
+
+  <div class="diagrama">
+    <svg viewBox="0 0 1180 456" role="img" aria-label="Seccion con las cotas verticales del sistema">
+      <defs>
+        <marker id="fl" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 z" fill="var(--accent)"/>
+        </marker>
+        <clipPath id="canal"><circle cx="391" cy="307" r="83"/></clipPath>
+      </defs>
+      <rect x="16" y="329" width="244" height="92" fill="none" stroke="var(--rule-2)" stroke-width="1.4"/>
+      <rect x="16" y="329" width="244" height="55" fill="var(--water-soft)"
+            stroke="var(--water)" stroke-width="1" stroke-dasharray="4 3"/>
+      <text class="svg-mini" x="16" y="441">dep&#243;sito &#183; <tspan fill="var(--water)">la l&#225;mina debe caer dentro de la banda: ventana de 23 mm</tspan></text>
+      <path d="M46,388 L377,110 L405,143 L74,421 Z" fill="var(--surface-2)"
+            stroke="var(--ink-2)" stroke-width="1.6"/>
+      <text class="svg-mini" x="150" y="322" transform="rotate(-40 150 322)">carcasa a 40&#176;</text>
+      <rect x="372" y="86" width="38" height="128" fill="var(--surface-3)"
+            stroke="var(--ink-2)" stroke-width="1.4"/>
+      <text class="svg-mini" x="416" y="104">boquilla</text>
+      <circle cx="391" cy="307" r="90" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="1.8"/>
+      <circle cx="391" cy="307" r="83" fill="none" stroke="var(--rule-2)" stroke-width="1"/>
+      <rect x="300" y="329" width="190" height="70" fill="var(--water-soft)" clip-path="url(#canal)"/>
+      <rect x="345" y="181" width="92" height="40" fill="var(--surface-3)"
+            stroke="var(--ink-2)" stroke-width="1.4"/>
+      <text class="svg-mini" x="446" y="196">manguito del Tap&#243;n A</text>
+      <text class="svg-mini" x="446" y="292">canal PVC &#216;75</text>
+      <g stroke="var(--rule-2)" stroke-width="1" stroke-dasharray="4 4">
+        <path d="M16,86 L636,86"/><path d="M16,181 L636,181"/><path d="M16,214 L636,214"/>
+        <path d="M16,307 L636,307"/><path d="M16,329 L636,329"/>
+        <path d="M16,360 L636,360"/><path d="M16,384 L636,384"/>
+      </g>
+      <g class="svg-cota">
+        <text x="648" y="90">115,7 &#183; descarga, eje de la boquilla</text>
+        <text x="648" y="185">74,7 &#183; boca del manguito</text>
+        <text x="648" y="218">60,7 &#183; boca de la boquilla y hombro de tope</text>
+        <text x="648" y="311">22,2 &#183; eje del canal</text>
+        <text x="648" y="333">12,7 &#183; l&#225;mina del canal y nivel m&#225;ximo del dep&#243;sito</text>
+        <text x="648" y="364">0,0 &#183; base del tubo de la carcasa</text>
+        <text x="648" y="388">&#8722;10,2 &#183; nivel m&#237;nimo para cebar el tornillo</text>
+      </g>
+      <path d="M330,181 L330,214" stroke="var(--accent)" stroke-width="1.2"
+            marker-start="url(#fl)" marker-end="url(#fl)" fill="none"/>
+      <text class="svg-cota" x="262" y="202" fill="var(--accent)">14 mm</text>
+    </svg>
+    <p class="pie">La boquilla es un tramo recto girado exactamente la inclinación de la
+    carcasa: con el conjunto montado queda a plomo y su boca sale cortada en horizontal.
+    Encaja 14&nbsp;mm dentro del manguito con 1&nbsp;mm de holgura radial, que admite
+    8° de desviación sin tocar.</p>
+  </div>
+</section>
+
+<section class="bloque">
+  <p class="eyebrow">Reenvío cónico</p>
+  <h2>Las dos cotas que no se pueden montar a ojo</h2>
+  <p class="lede">Con turbina de eje vertical y tornillo a 40°, el ángulo entre ejes no es
+  90° sino 130°, y en una relación 1:1 cada cono primitivo vale la mitad: 65°. Los dos ejes
+  se cortan en un punto —el ápice— y la posición axial de cada engranaje respecto a ese
+  punto es lo que define el engrane.</p>
+
+  <div class="diagrama">
+    <svg viewBox="0 0 900 430" role="img" aria-label="Esquema del par c&#243;nico con las cotas de montaje">
+      <g stroke="var(--rule-2)" stroke-width="1" stroke-dasharray="7 5">
+        <path d="M400,215 L400,26"/><path d="M400,215 L556,346"/>
+      </g>
+      <g stroke="var(--water)" stroke-width="1" stroke-dasharray="3 3" opacity=".85">
+        <path d="M400,215 L484,176"/><path d="M400,215 L316,176"/>
+        <g transform="rotate(130 400 215)">
+          <path d="M400,215 L484,176"/><path d="M400,215 L316,176"/>
+        </g>
+      </g>
+      <g fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="1.4">
+        <path d="M417,188 L460,188 L488,176 L438,176 L438,117 L417,117 Z"/>
+        <path d="M383,188 L340,188 L312,176 L362,176 L362,117 L383,117 Z"/>
+      </g>
+      <rect x="329" y="47" width="142" height="8" fill="var(--rule)" stroke="var(--ink-2)" stroke-width="1.2"/>
+      <g transform="rotate(130 400 215)">
+        <g fill="var(--surface-2)" stroke="var(--ink-2)" stroke-width="1.4">
+          <path d="M417,188 L460,188 L488,176 L438,176 L438,117 L417,117 Z"/>
+          <path d="M383,188 L340,188 L312,176 L362,176 L362,117 L383,117 Z"/>
+        </g>
+        <rect x="329" y="89" width="142" height="8" fill="var(--rule)" stroke="var(--ink-2)" stroke-width="1.2"/>
+        <path d="M300,97 L300,117" stroke="var(--accent)" stroke-width="1.2"
+              marker-start="url(#fl)" marker-end="url(#fl)" fill="none"/>
+      </g>
+      <circle cx="400" cy="215" r="4.5" fill="var(--accent)"/>
+      <path d="M300,218 L390,215" stroke="var(--accent)" stroke-width=".8" opacity=".55" fill="none"/>
+      <text class="svg-lbl" x="212" y="222" fill="var(--accent)">&#225;pice com&#250;n</text>
+      <path d="M400,155 A60,60 0 0 1 446,254" fill="none" stroke="var(--water)" stroke-width="1.3"/>
+      <text class="svg-cota" x="614" y="262" fill="var(--water)">&#931; = 130&#176; entre ejes</text>
+      <text class="svg-cota" x="614" y="278" fill="var(--water)">cono primitivo &#948; = 65&#176;</text>
+      <path d="M292,55 L292,117" stroke="var(--accent)" stroke-width="1.2"
+            marker-start="url(#fl)" marker-end="url(#fl)" fill="none"/>
+      <path d="M292,55 L329,55 M292,117 L362,117" stroke="var(--accent)" stroke-width=".8"
+            opacity=".55" fill="none"/>
+      <text class="svg-cota" x="212" y="90" fill="var(--accent)">14,7 mm</text>
+      <path d="M556,202 L610,182" stroke="var(--accent)" stroke-width=".8" opacity=".55" fill="none"/>
+      <text class="svg-cota" x="614" y="182" fill="var(--accent)">4,7 mm</text>
+      <text class="svg-lbl" x="182" y="132">engranaje del m&#225;stil</text>
+      <text class="svg-mini" x="182" y="148">hacia la turbina</text>
+      <text class="svg-mini" x="486" y="44">buje del brazo de la torreta</text>
+      <text class="svg-lbl" x="596" y="330">engranaje del tornillo</text>
+      <text class="svg-mini" x="596" y="346">hacia la carcasa</text>
+      <text class="svg-mini" x="596" y="362">buje central de la torreta</text>
+    </svg>
+    <p class="pie">Ambas cotas se miden entre la cara del buje que aloja el rodamiento y la
+    base del cubo del engranaje. Son la forma práctica de colocar el ápice donde toca sin
+    tener que medir hasta un punto que está en el aire.</p>
+  </div>
+</section>
+
+<section class="bloque">
+  <p class="eyebrow">Inventario</p>
+  <h2>Las veinte piezas</h2>
+  <p class="lede">Todas salen de los seis módulos paramétricos y se imprimen en tres
+  bandejas. Además hacen falta: varilla inoxidable Ø8 (257 y 299&nbsp;mm), tres rodamientos
+  608ZZ, ocho prisioneros M3, diez tornillos M4, tubo PVC Ø75, tubo Ø25 para el bastidor y
+  manguera Ø12 para el retorno.</p>
+  <div class="inventario">
+{{INVENTARIO}}
+  </div>
+</section>
+
+<section class="bloque">
+  <p class="eyebrow">Montaje</p>
+  <h2>Diez pasos, en este orden</h2>
+  <p class="lede">El orden no es indiferente: hay dos pasos que solo se pueden hacer antes
+  de otro. El embudo se monta con la varilla ya puesta, y el canal se coloca al final,
+  deslizándolo bajo la boquilla en vez de mover la carcasa.</p>
+
+{{PASOS}}
+</section>
+
+<section class="bloque">
+  <p class="eyebrow">Verificación</p>
+  <h2>Acta de comprobación</h2>
+  <p class="lede">Estas comprobaciones no están escritas a mano: <code>verificacion.py</code>
+  hace que OpenSCAD evalúe cada módulo y devuelva sus propias variables, y sobre esos
+  números comprueba ajustes, alineaciones y límites físicos. Si cambias un parámetro y algo
+  deja de cuadrar, la tabla lo dice.</p>
+  <div class="tabla">
+    <table>
+      <tbody>
+{{VERIFICACION}}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="bloque">
+  <p class="eyebrow">Límites</p>
+  <h2>Lo que este sistema no puede hacer</h2>
+  <p class="lede">Funciona, pero conviene saber dónde están sus techos antes de plantar.</p>
+  <div class="limites">
+    <div class="limite">
+      <h4>El caudal satura pronto</h4>
+      <p class="n">427 rpm · desde 3 m/s</p>
+      <p>Es la velocidad crítica del tornillo: por encima, la fuerza centrífuga vacía los
+      cangilones. El viento extra no sube el caudal. Si tu emplazamiento es ventoso, la
+      mejora rentable es una reducción 2:1 en el mástil.</p>
+    </div>
+    <div class="limite">
+      <h4>Cuatro lechugas por tramo</h4>
+      <p class="n">65 mg/h aportados · 60 mg/h consumidos</p>
+      <p>El límite no es el agua sino el oxígeno disuelto, y van justos. Con albahaca o
+      lechuga baby la demanda cae a la mitad y caben seis.</p>
+    </div>
+    <div class="limite">
+      <h4>Las calmas se notan en minutos</h4>
+      <p class="n">6 min de reserva disuelta</p>
+      <p>Lo que sostiene la planta cuando para el viento no es el agua almacenada sino la
+      raíz que respira en aire húmedo. Por eso el Tapón B lleva respiraderos y el manguito
+      de entrada no cierra.</p>
+    </div>
+    <div class="limite">
+      <h4>La nivelación es fina</h4>
+      <p class="n">ventana de 23 mm</p>
+      <p>El depósito tiene que quedar con su lámina prácticamente a la altura de la base de
+      la carcasa. Es la única cota del montaje que no se puede corregir después apretando
+      un tornillo.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Generado desde la geometría real: <code>render_stl.sh</code> → <code>08_montaje.scad</code> → <code>infografia.py</code></span>
+  <span>Cotas verificadas por <code>verificacion.py</code></span>
+  <span>Hidráulica y agronomía en <code>analisis_bomba.py</code></span>
+</footer>
+
+</div>
