@@ -21,4 +21,8 @@ render 04_tapones_pvc75.scad       tapon_a
 render 04_tapones_pvc75.scad       tapon_b
 render 05_net_cup_50.scad          vaso
 render 05_net_cup_50.scad          plantilla
+render 06_estructura.scad          conector_3v
+render 06_estructura.scad          abraz_canal
+render 06_estructura.scad          abraz_carcasa
+render 06_estructura.scad          sop_mastil
 echo "Listo: $(ls -1 "$OUT" | wc -l) archivos en $OUT/"

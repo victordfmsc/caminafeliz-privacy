@@ -10,6 +10,14 @@
 //        - encaje a presion            : diametro + 1*tol  (0.3 mm diametral)
 //    * Sin librerias externas: el archivo renderiza tal cual
 // ---------------------------------------------------------------------
+//  MONTAJE INCLINADO
+//    El tornillo trabaja a 40 grados sobre la horizontal. Un Arquimedes
+//    vertical NO bombea: los cangilones solo cierran si la inclinacion es
+//    compatible con el paso. Criterio de Rorres (2000):
+//        paso adimensional  L = S*tan(a) / (2*pi*Ro)   debe ser < 1
+//    Con S=30, Ro=20 y a=40 -> L = 0.20, que ademas es el entorno del
+//    optimo de caudal por vuelta para esa inclinacion.
+// ---------------------------------------------------------------------
 //  PIEZAS
 //    "tornillo" -> rotor helicoidal          (imprimir de pie, sin soportes)
 //    "carcasa"  -> tubo + boquilla de vertido (imprimir de pie, boca abajo)
@@ -29,6 +37,9 @@ pieza = "tornillo";      // ["tornillo","carcasa","embudo","conjunto"]
 tol   = 0.3;             // tolerancia de ensamblaje
 pared = 3;               // grosor de pared minimo
 
+/* [Montaje] */
+inclinacion = 40;        // grados del eje del tornillo sobre la horizontal
+
 /* [Rotor helicoidal] */
 helice_d    = 40;        // diametro exterior del helicoide
 paso        = 30;        // avance por vuelta
@@ -43,13 +54,16 @@ carcasa_largo = 200;     // longitud del tubo recto
 embudo_d      = 90;      // diametro de boca del embudo de entrada
 embudo_h      = 45;      // altura del cono del embudo
 embudo_encaje = 20;      // profundidad del casquillo embudo-tubo
-embudo_patas  = 12;      // patas que separan la boca del fondo del deposito
+embudo_patas  = 0;       // patas de apoyo (0 = el embudo cuelga sumergido,
+                         // que es como trabaja con el tubo inclinado)
+embudo_vent   = 4;       // ventanas de admision en el cono
 embudo_buje   = true;    // arana con buje liso que guia el extremo inferior
                          // del eje (cojinete lubricado por el propio agua)
 boquilla_d    = 32;      // diametro EXTERIOR de la boquilla de vertido
-boquilla_ang  = 25;      // inclinacion del tramo oblicuo respecto a la horizontal
-boquilla_vuelo= 55;      // salida horizontal desde el eje del tubo
-bajante_h     = 30;      // tramo vertical final que entra en el Tapon A (Modulo 4)
+boquilla_l    = 55;      // longitud de la boquilla medida desde el eje del tubo.
+                         // Sale a 'inclinacion' grados del plano perpendicular
+                         // al tubo, es decir: A PLOMO cuando el conjunto se
+                         // monta inclinado, y con la boca cortada horizontal.
 brida_sup     = true;    // corona superior para atornillar el soporte (Modulo 3)
 pcd_brida     = 60;      // circulo de taladros M4 de la corona superior
 
@@ -65,13 +79,26 @@ casq_ext_d    = casq_int_d + 2*pared;     // 53.2
 boquilla_int_d= boquilla_d - 2*pared;     // 26.0
 m3_broca      = 2.8;                      // roscado directo en plastico para M3
 m4_paso       = 4.4;                      // taladro pasante M4
+lambda_r      = paso * tan(inclinacion) / (2 * PI * helice_d / 2);  // Rorres
 
 assert(pared >= 3, "El grosor de pared no puede bajar de 3 mm.");
 assert(nucleo_d < helice_d - 4, "El nucleo invade el filete: reduce el eje o sube helice_d.");
+assert(lambda_r < 1,
+       "Los cangilones no cierran: reduce el paso o baja la inclinacion.");
 
 echo(str("Carcasa: Dint=", carcasa_int_d, " Dext=", carcasa_ext_d));
 echo(str("Tornillo: nucleo=", nucleo_d, " agujero eje=", eje_agujero_d,
          " vueltas=", largo_util/paso));
+echo(str("Inclinacion=", inclinacion, " deg | paso adimensional (Rorres) L=",
+         lambda_r, " (debe ser < 1; optimo ~0.2)"));
+echo(str("Elevacion util = ", largo_util * sin(inclinacion), " mm"));
+// Cadena de cotas del vertido, medida desde la base del tubo de la carcasa
+// (z=0 = boca del casquillo del embudo) con el conjunto ya inclinado:
+echo(str("Descarga (eje de la boquilla) a z=", (carcasa_largo - 20) * sin(inclinacion),
+         " mm | boca de la boquilla a z=",
+         (carcasa_largo - 20) * sin(inclinacion) - boquilla_l, " mm"));
+echo(str("Vuelo libre de la boquilla fuera de la carcasa = ",
+         boquilla_l - (carcasa_ext_d / 2) / cos(inclinacion), " mm"));
 
 // =====================================================================
 //  UTILIDADES
@@ -133,17 +160,12 @@ module tornillo() {
 //  PIEZA B - CARCASA (TUBO + EMBUDO + BOQUILLA)
 // =====================================================================
 
-// Boquilla de vertido: tramo oblicuo + codo + bajante vertical que encaja
-// dentro del Tapon A del Modulo 4.
+// Boquilla de vertido. Con el tubo inclinado 'inclinacion' grados sobre la
+// horizontal, un tramo recto girado ese mismo angulo respecto al plano
+// perpendicular al tubo queda EXACTAMENTE vertical: cae a plomo dentro del
+// manguito del Tapon A (Modulo 4) y su boca queda cortada en horizontal.
 module boquilla_solida(d) {
-    l_obl = boquilla_vuelo / cos(boquilla_ang);
-    z_cod = -boquilla_vuelo * tan(boquilla_ang);
-    // tramo oblicuo (hacia +X y hacia abajo)
-    rotate([0, 90 + boquilla_ang, 0]) cylinder(d = d, h = l_obl);
-    // codo
-    translate([boquilla_vuelo, 0, z_cod]) sphere(d = d);
-    // bajante vertical
-    translate([boquilla_vuelo, 0, z_cod - bajante_h]) cylinder(d = d, h = bajante_h);
+    rotate([0, 90 + inclinacion, 0]) cylinder(d = d, h = boquilla_l);
 }
 
 module carcasa() {
@@ -214,17 +236,24 @@ module embudo() {
             cylinder(d1 = embudo_d, d2 = casq_ext_d, h = embudo_h);
             // Casquillo de union con el tubo
             translate([0, 0, embudo_h]) cylinder(d = casq_ext_d, h = embudo_encaje);
-            // Patas
-            for (a = [0 : 120 : 359])
-                rotate([0, 0, a])
-                    translate([embudo_d / 2 - 3, 0, -embudo_patas])
-                        cylinder(d = 12, h = embudo_patas + 6);
+            // Patas opcionales
+            if (embudo_patas > 0)
+                for (a = [0 : 120 : 359])
+                    rotate([0, 0, a])
+                        translate([embudo_d / 2 - 3, 0, -embudo_patas])
+                            cylinder(d = 12, h = embudo_patas + 6);
         }
         // Conducto interior: boca ancha -> casquillo
         translate([0, 0, -1])
             cylinder(d1 = embudo_d - 2 * pared, d2 = casq_int_d, h = embudo_h + 1);
         translate([0, 0, embudo_h])
             cylinder(d = casq_int_d, h = embudo_encaje + 1);
+        // Ventanas de admision: dejan entrar agua aunque la boca quede
+        // proxima al fondo del deposito. Mantienen 4 pilares de union.
+        if (embudo_vent > 0)
+            for (a = [0 : 360 / embudo_vent : 359])
+                rotate([0, 0, a + 180 / embudo_vent])
+                    translate([15, -11, 9]) cube([50, 22, embudo_h - 22]);
     }
 }
 
@@ -235,7 +264,10 @@ if (pieza == "tornillo") tornillo();
 else if (pieza == "carcasa") carcasa();
 else if (pieza == "embudo") embudo();
 else {
-    carcasa();
-    color("Silver") translate([0, 0, -embudo_h]) embudo();
-    color("SteelBlue") translate([0, 0, 8]) tornillo();
+    // Vista de montaje en su posicion real de trabajo
+    rotate([0, 90 - inclinacion, 0]) {
+        carcasa();
+        color("Silver") translate([0, 0, -embudo_h]) embudo();
+        color("SteelBlue") translate([0, 0, 8]) tornillo();
+    }
 }

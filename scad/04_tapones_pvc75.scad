@@ -38,8 +38,11 @@ fondo    = 4;            // espesor del fondo
 
 /* [Tapon A - entrada] */
 boquilla_d = 32;         // Ø EXTERIOR de la boquilla del Modulo 1
-manguito_h = 22;         // vuelo del manguito sobre la generatriz del tubo
-manguito_p = 20;         // profundidad de encaje de la boquilla
+manguito_h = 15;         // vuelo del manguito sobre la generatriz del tubo
+// La profundidad de encaje NO se fija a mano: se deriva del hombro de
+// tope, que se situa 4 mm por encima de la generatriz superior del
+// conducto. Fijarla a mano hacia caer el hombro justo en la tangente de
+// la camara y generaba una degeneracion (solido no valido).
 
 /* [Tapon B - salida / rebose] */
 nivel_agua = 25;         // lamina de agua sobre la base interior del tubo
@@ -62,6 +65,8 @@ largo       = encaje + camara + fondo;         // 69
 manguito_int_d = boquilla_d + 2 * tol;         // 32.6 encaje deslizante
 manguito_ext_d = manguito_int_d + 2 * pared;   // 38.6
 z_manguito     = cam_ext_d / 2 + manguito_h;   // cota de la boca del manguito
+z_hombro       = cam_int_d / 2 + 4;            // tope de la boquilla
+manguito_p     = z_manguito - z_hombro;        // profundidad de encaje
 x_manguito     = encaje + camara / 2;
 
 // Eje del racor: su generatriz inferior queda a 'nivel_agua' del suelo
@@ -70,10 +75,14 @@ racor_ext_d= racor_int_d + 2 * pared;          // 18
 
 assert(nivel_agua + racor_int_d < tubo_int_d, "El racor no cabe en el tubo.");
 assert(camara > manguito_ext_d * 0.8, "Camara corta para el manguito de entrada.");
+assert(manguito_p >= 12, "Encaje de la boquilla demasiado corto: sube manguito_h.");
 
 echo(str("Tapon: L=", largo, " casquillo Øint=", casq_int_d, " Øext=", casq_ext_d));
 echo(str("Tapon B: eje del racor a z=", z_racor,
          " (lamina de agua de ", nivel_agua, " mm)"));
+echo(str("Boca del manguito a ", z_manguito, " mm sobre el eje del canal; ",
+         "la boquilla del Modulo 1 debe terminar a ", z_manguito - manguito_p,
+         " mm sobre ese eje."));
 
 // =====================================================================
 //  CUERPO COMUN
@@ -153,7 +162,7 @@ module tapon_b() {
 // =====================================================================
 if (pieza == "tapon_a") tapon_a();
 else if (pieza == "tapon_b") tapon_b();
-else {
+else if (pieza == "conjunto") {
     color("SeaGreen") tapon_a();
     color("Teal") translate([420, 0, 0]) mirror([1, 0, 0]) tapon_b();
     // referencia: tramo de tubo PVC
