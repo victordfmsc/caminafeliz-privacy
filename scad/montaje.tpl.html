@@ -235,6 +235,99 @@ footer code{background:none; color:var(--ink-2); padding:0}
 </section>
 
 <section class="bloque">
+  <p class="eyebrow">Arranque</p>
+  <h2>Lo que hace que un molino as&iacute; no se mueva</h2>
+  <p class="lede">El par que exige el tornillo es rid&iacute;culo: 23&nbsp;&micro;N&middot;m. Quien decide
+  si arranca no es la carga hidr&aacute;ulica sino el <strong>rozamiento del tren</strong>, y
+  con un Savonius el par disponible cae con el <em>cuadrado</em> de la velocidad del
+  viento. Las dos cosas juntas explican por qu&eacute; un aparato aparentemente bien hecho se
+  queda quieto.</p>
+
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Rozamiento del tren</th><th>Par de arranque</th>
+        <th>Par disponible</th><th>&Oslash;120&times;150</th><th>&Oslash;160&times;200</th></tr></thead>
+      <tbody>
+        <tr><td>3 &times; 608ZZ con grasa de f&aacute;brica</td><td class="val">1500 &micro;N&middot;m</td>
+            <td>viento 1,5 m/s</td><td class="val">447 &micro;N&middot;m</td><td class="val">1058</td></tr>
+        <tr><td>3 &times; 608 desengrasado y aceite fino</td><td class="val">120 &micro;N&middot;m</td>
+            <td>viento 2 m/s</td><td class="val">794</td><td class="val">1882</td></tr>
+        <tr><td>Buje del embudo, mojado</td><td class="val">200 &micro;N&middot;m</td>
+            <td>viento 3 m/s</td><td class="val">1786</td><td class="val">4234</td></tr>
+        <tr><td>Engrane c&oacute;nico impreso</td><td class="val">50 &micro;N&middot;m</td>
+            <td>viento 4 m/s</td><td class="val">3175</td><td class="val">7526</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cifras" style="margin-top:22px">
+    <div class="cifra"><b>3,0 <span>m/s</span></b><p>Con rodamientos de f&aacute;brica</p>
+      <small>1750&nbsp;&micro;N&middot;m de rozamiento. Es el caso del molino que
+      &laquo;apenas se mueve&raquo;: hace falta viento fuerte solo para vencerse a s&iacute; mismo.</small></div>
+    <div class="cifra"><b>1,4 <span>m/s</span></b><p>Desengrasados</p>
+      <small>370&nbsp;&micro;N&middot;m. Quitar la grasa de los tres rodamientos es la
+      intervenci&oacute;n de mayor efecto de todo el proyecto, y es gratis.</small></div>
+    <div class="cifra"><b>0,9 <span>m/s</span></b><p>Y rotor &Oslash;160&times;200</p>
+      <small>El par del Savonius va con D&sup2;H: subir el rotor lo multiplica por 2,4 y
+      adem&aacute;s baja las rpm, que es lo que interesa porque el caudal ya est&aacute; saturado.</small></div>
+    <div class="cifra"><b>2,4 <span>m/s</span></b><p>Con &aacute;labe recto</p>
+      <small>Un Savonius de dos palas rectas tiene posiciones en las que el coeficiente
+      de par cae a 0,10: puntos muertos. El &aacute;labe helicoidal de 120&deg; los elimina.</small></div>
+  </div>
+
+  <h3 style="font-size:1.15rem;font-weight:600;margin-top:38px">El emplazamiento pesa m&aacute;s que cualquier pieza</h3>
+  <p class="lede" style="margin-top:10px">El par va con <em>v</em>&sup2;, as&iacute; que perder
+  velocidad de viento se paga al cuadrado. Un balc&oacute;n con barandilla, pared al lado y
+  alero encima puede dejar la mitad de la velocidad libre, y con ella un cuarto del par.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Velocidad en el emplazamiento</th><th>Par que queda</th>
+        <th>Viento libre necesario para arrancar</th></tr></thead>
+      <tbody>
+        <tr><td>100 % (mástil despejado)</td><td class="val">100 %</td><td class="val">1,4 m/s</td></tr>
+        <tr><td>70 % (por encima del pretil)</td><td class="val">49 %</td><td class="val">2,0 m/s</td></tr>
+        <tr><td>50 % (tras la barandilla)</td><td class="val">25 %</td><td class="val">2,7 m/s</td></tr>
+        <tr><td>35 % (rinc&oacute;n abrigado)</td><td class="val">12 %</td><td class="val">3,9 m/s</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lede" style="margin-top:18px">Regla pr&aacute;ctica: el rotor tiene que estar por
+  encima del pretil y a m&aacute;s de un di&aacute;metro de rotor de cualquier superficie. Si te obliga
+  a subir el m&aacute;stil 40&nbsp;cm, s&uacute;belo: rinde m&aacute;s que cualquier cambio de pieza.</p>
+
+  <h3 style="font-size:1.15rem;font-weight:600;margin-top:38px">Dos pruebas antes de meter agua</h3>
+  <div class="limites" style="margin-top:16px">
+    <div class="limite">
+      <h4>Parada libre</h4>
+      <p class="n">&ge; 10 s desde 200 rpm</p>
+      <p>Con el tren montado y seco, lanza el rotor con la mano y cronometra. Bien
+      ajustado y desengrasado ronda los 25&nbsp;s. Si se para en menos de 10, no
+      arrancar&aacute; con brisa: busca el punto duro antes de seguir.</p>
+    </div>
+    <div class="limite">
+      <h4>Par de arranque</h4>
+      <p class="n">10 g en un hilo</p>
+      <p>Enrolla un hilo en la varilla de &Oslash;8 y cuelga peso. Con unos 10&nbsp;g debe
+      empezar a girar. Si necesita 40, los rodamientos siguen con la grasa de f&aacute;brica.</p>
+    </div>
+    <div class="limite">
+      <h4>Si notas puntos duros</h4>
+      <p class="n">casi siempre es el engrane</p>
+      <p>Un par c&oacute;nico montado 1&nbsp;mm fuera de su cota entra forzado. Afloja el
+      prisionero y separa el engranaje medio mil&iacute;metro hasta que gire suave en toda
+      la vuelta.</p>
+    </div>
+    <div class="limite">
+      <h4>C&oacute;mo desengrasar</h4>
+      <p class="n">tres rodamientos, diez minutos</p>
+      <p>Quita un escudo con la punta de un cutter, lava la grasa con alcohol o
+      disolvente, seca y pon <em>una</em> gota de aceite fino. Vuelve a poner el escudo
+      por el lado del agua.</p>
+    </div>
+  </div>
+</section>
+
+<section class="bloque">
   <p class="eyebrow">Cadena de cotas</p>
   <h2>Dónde cae cada nivel</h2>
   <p class="lede">Todas las alturas están referidas a la base del tubo de la carcasa. La

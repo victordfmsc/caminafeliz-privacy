@@ -91,9 +91,12 @@ De ahí la pieza **`calibre`**: un anillo de carcasa y un tramo de tornillo que 
 imprimen en diez minutos para medir el error real de la máquina antes de gastar
 filamento en el tubo de 200 mm.
 
-**El sistema no está limitado por par sino por velocidad.** El par estático del
-rotor supera al que pide el tornillo por un factor de 35 (2 m/s) a 216 (5 m/s),
-así que arranca con brisa floja y el rozamiento de los tres 608 no lo compromete.
+**El par que pide el tornillo es ridículo; el que manda es el rozamiento.** El
+margen frente a la carga hidráulica (23 µN·m) es de dos órdenes de magnitud, pero
+esa no es la comparación útil: el rotor tiene que vencer el rozamiento del tren, y
+tres rodamientos 608ZZ con la grasa de fábrica suman ~1500 µN·m. Con eso el viento
+de arranque son **3.0 m/s**; desengrasados baja a **1.4 m/s** (`arranque.py`).
+Quitar la grasa es la intervención de mayor efecto de todo el proyecto y es gratis.
 En cambio el tornillo tiene su propia velocidad crítica. La fórmula de Muysken
 (`N ≈ 50/D^(2/3)`) está calibrada para tornillos de obra: entre 0.5 y 2 m mantiene
 la aceleración centrípeta del radio exterior en 1.3–1.4 g, pero extrapolada a Ø40
@@ -126,6 +129,7 @@ tocan el diseño. Con vendaval conviene desmontar el rotor: nada lo frena.
 08_montaje.scad               vistas paso a paso del montaje
 analisis_bomba.py             modelo hidráulico, energético y agronómico
 mejoras.py                    qué interviene sobre cada techo, y cuánto
+arranque.py                   balance de par en el arranque y viento de cebado
 verificacion.py               comprueba que la cadena de cotas cierra
 render_stl.sh                 exporta los 20 STL a ./stl
 bandejas.py                   reparte las piezas en bandejas de la P2S
