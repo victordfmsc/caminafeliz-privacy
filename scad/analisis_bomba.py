@@ -76,6 +76,19 @@ def fuga(gap, S, a, esp=ESP):
     q_orf = 0.6 * w * h * math.sqrt(2 * G * dh)
     return min(q_vis, q_orf) * 60000.0, max(q_vis, q_orf) * 60000.0   # L/min
 
+def n_critica(Ro_mm=Ro, g_adm=1.40):
+    """Velocidad a la que el agua deja de quedarse en el fondo del cangilon.
+
+    La formula de Muysken (N = 50/D^(2/3)) esta calibrada para tornillos
+    hidraulicos de obra, con D del orden del metro. Extrapolada a D = 40 mm
+    pide 4,1 g de aceleracion centripeta en el radio exterior, cuando entre
+    0,5 y 2 m se mantiene en 1,3-1,4 g: el exponente no es coherente con el
+    mecanismo. El centrifugado exige omega^2*R < k*g, es decir N ~ D^(-1/2).
+    Recalibrando sobre el punto de 1 m sale 250 rpm para Ø40; el criterio
+    puro de tambor (omega^2*R = g) da 211. Se trabaja con 1,40 g -> 230-250.
+    """
+    return 9.5493 * math.sqrt(g_adm * G / (Ro_mm / 1000))
+
 # --------------------------------------------------------------------- eolica
 def savonius(v, D=0.120, H=0.150, Cp=0.20, rho=1.225):
     return 0.5 * rho * D * H * v ** 3 * Cp                    # W en el eje
@@ -126,11 +139,11 @@ if __name__ == "__main__":
 
     print(f"\n{' CAUDAL Y VIENTO ':=^70}")
     print(f"  Volumen por vuelta: {V/1000:.2f} mL   |   velocidad critica del"
-          f" tornillo (Muysken): {50/0.040**(2/3):.0f} rpm")
+          f" tornillo: {n_critica():.0f} rpm")
     print(f"  {'v m/s':>6} {'P eje':>8} {'rpm libre':>10} {'rpm util':>9}"
           f" {'caudal neto L/min':>19}")
     for v in (2, 3, 4, 6):
-        N = min(rpm_libre(v), 50 / 0.040 ** (2 / 3))
+        N = min(rpm_libre(v), n_critica())
         f0, f1 = fuga(GAP, S, ALFA)
         Q = V * N / 1e6
         print(f"  {v:6.1f} {savonius(v)*1000:6.0f}mW {rpm_libre(v):10.0f}"
@@ -149,11 +162,12 @@ if __name__ == "__main__":
     print(f"\n{' BALANCE AGRONOMICO ':=^70}")
     Vc = volumen_canal()
     f0, f1 = fuga(GAP, S, ALFA)
-    Qn = max(0, V * 300 / 1e6 - (f0 + f1) / 2)
+    Qn = max(0, V * n_critica() / 1e6 - (f0 + f1) / 2)
     print(f"  Volumen del canal (Ø69, 25 mm de lamina, 600 mm) : {Vc:.2f} L")
-    print(f"  Caudal neto de referencia (300 rpm)              : {Qn:.2f} L/min")
+    print(f"  Caudal neto en saturacion ({n_critica():.0f} rpm)          : {Qn:.2f} L/min")
     print(f"  Renovacion del canal                             : {Vc/Qn:.1f} min")
     print(f"  Oxigeno aportado (delta 3 mg/L utiles)           : {Qn*60*3:.0f} mg/h")
-    print(f"  Demanda de 4 lechugas adultas (15 mg/h cada una) : {4*15} mg/h")
+    print(f"  Plantas que sostiene (15 mg/h por lechuga)       : {Qn*60*3/15:.1f}")
     print(f"  Reserva disuelta en el canal (8 mg/L)            : {Vc*8:.1f} mg")
-    print(f"  Autonomia sin viento (4 lechugas)                : {Vc*8/(4*15)*60:.0f} min")
+    n_pl = Qn * 60 * 3 / 15
+    print(f"  Autonomia sin viento                             : {Vc*8/(n_pl*15)*60:.0f} min")

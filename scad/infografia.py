@@ -217,7 +217,10 @@ def main():
                .replace("{{N_CHECKS}}", str(n_chk))
                .replace("{{ESTADO}}", "todas pasan" if todo_ok else "CON FALLOS")
                .replace("{{HERO}}", paso(10)))
-    open(SALIDA, "w", encoding="utf-8").write(html)
+    # Se escribe en ASCII puro con entidades numericas: asi la pagina se ve
+    # igual aunque el contenedor no declare el juego de caracteres.
+    html = html.encode("ascii", "xmlcharrefreplace").decode("ascii")
+    open(SALIDA, "w", encoding="ascii").write(html)
     print(f"{SALIDA}  ({os.path.getsize(SALIDA)/1e6:.2f} MB, {n_chk} comprobaciones)")
 
 

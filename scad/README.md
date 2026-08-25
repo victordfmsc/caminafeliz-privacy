@@ -94,20 +94,24 @@ filamento en el tubo de 200 mm.
 **El sistema no está limitado por par sino por velocidad.** El par estático del
 rotor supera al que pide el tornillo por un factor de 35 (2 m/s) a 216 (5 m/s),
 así que arranca con brisa floja y el rozamiento de los tres 608 no lo compromete.
-En cambio la velocidad crítica del tornillo (Muysken, `N ≈ 50/D^(2/3)`) son
-**427 rpm** para Ø40, y una Savonius libre ya los supera con 2.7 m/s:
+En cambio el tornillo tiene su propia velocidad crítica. La fórmula de Muysken
+(`N ≈ 50/D^(2/3)`) está calibrada para tornillos de obra: entre 0.5 y 2 m mantiene
+la aceleración centrípeta del radio exterior en 1.3–1.4 g, pero extrapolada a Ø40
+pide 4.1 g, que no es el mecanismo. El centrifugado exige `N ∝ D^(−1/2)`:
+recalibrando sobre el punto de 1 m salen **250 rpm**, y el criterio puro de tambor
+(`ω²R = g`) da 211. Una Savonius libre los supera ya con **1.6 m/s**:
 
 | viento | potencia en el eje | rpm libres | rpm útiles | caudal neto |
 |---:|---:|---:|---:|---:|
-| 2 m/s | 18 mW | 318 | 318 | 0.34–0.44 L/min |
-| 3 m/s | 60 mW | 477 | 427 | 0.51–0.60 L/min |
-| 6 m/s | 476 mW | 955 | 427 | 0.51–0.60 L/min |
+| 2 m/s | 18 mW | 318 | 250 | 0.23–0.33 L/min |
+| 3 m/s | 60 mW | 477 | 250 | 0.23–0.33 L/min |
+| 6 m/s | 476 mW | 955 | 250 | 0.23–0.33 L/min |
 
-O sea: **el caudal satura en ~0.55 L/min a partir de 3 m/s** y todo el viento
-extra se desperdicia. Si el emplazamiento es ventoso, la mejora rentable es una
-reducción de 2:1 en el mástil (etapa recta aparte: con Σ = 130° una reducción en
-el propio par cónico obligaría a un engranaje de corona, no imprimible por
-extrusión). Con vendaval conviene desmontar el rotor: nada lo frena.
+O sea: **el caudal satura en ~0.28 L/min desde 1.6 m/s** y el tornillo está
+saturado prácticamente siempre. El caudal no lo pone el viento, lo pone el volumen
+de cangilón. `mejoras.py` cuantifica las seis intervenciones que suben ese techo y
+los otros tres; las dos primeras —sombrear el canal y una válvula de flotador— no
+tocan el diseño. Con vendaval conviene desmontar el rotor: nada lo frena.
 
 ## Archivos
 
@@ -121,6 +125,7 @@ extrusión). Con vendaval conviene desmontar el rotor: nada lo frena.
 07_conjunto_general.scad      vista de obra (importa los STL, no imprimible)
 08_montaje.scad               vistas paso a paso del montaje
 analisis_bomba.py             modelo hidráulico, energético y agronómico
+mejoras.py                    qué interviene sobre cada techo, y cuánto
 verificacion.py               comprueba que la cadena de cotas cierra
 render_stl.sh                 exporta los 20 STL a ./stl
 bandejas.py                   reparte las piezas en bandejas de la P2S

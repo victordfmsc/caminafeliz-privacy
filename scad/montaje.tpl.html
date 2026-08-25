@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Bomba de Arquímedes eólica</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -137,6 +138,12 @@ h2{font-size:clamp(1.55rem,3vw,2.1rem); font-weight:700; letter-spacing:-.015em}
 table{border-collapse:collapse; width:100%; min-width:600px; font-family:var(--sans);
   font-size:.9rem}
 th,td{text-align:left; padding:9px 14px; border-bottom:1px solid var(--rule)}
+thead th{font-family:var(--sans); font-size:.68rem; font-weight:600;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3);
+  background:var(--surface-2); border-bottom:1px solid var(--rule-2)}
+td.gana{font-family:var(--mono); font-size:.84rem; color:var(--ok); font-weight:500}
+td.cst{color:var(--ink-3); font-size:.85rem}
+.rank{font-family:var(--mono); font-size:.78rem; color:var(--accent); font-weight:600; width:34px}
 tr.grupo th{font-family:var(--sans); font-size:.68rem; font-weight:600; letter-spacing:.14em;
   text-transform:uppercase; color:var(--ink-3); background:var(--surface-2);
   border-bottom:1px solid var(--rule-2); padding-top:12px; padding-bottom:10px}
@@ -207,10 +214,10 @@ footer code{background:none; color:var(--ink-2); padding:0}
       190&nbsp;mm cuando el máximo real son 54.</small>
     </div>
     <div class="cifra">
-      <b>0,5 <span>L/min</span></b>
+      <b>0,28 <span>L/min</span></b>
       <p>Caudal neto</p>
-      <small>1,53&nbsp;mL por vuelta menos la fuga por la holgura. Satura a partir de
-      3&nbsp;m/s porque el tornillo tiene su propia velocidad crítica en 427&nbsp;rpm.</small>
+      <small>1,53&nbsp;mL por vuelta menos la fuga por la holgura, a las 250&nbsp;rpm en
+      que el tornillo empieza a centrifugar. Renueva el canal cada 2,6&nbsp;min.</small>
     </div>
     <div class="cifra">
       <b>×35 – ×216</b>
@@ -388,31 +395,109 @@ footer code{background:none; color:var(--ink-2); padding:0}
   <p class="lede">Funciona, pero conviene saber dónde están sus techos antes de plantar.</p>
   <div class="limites">
     <div class="limite">
-      <h4>El caudal satura pronto</h4>
-      <p class="n">427 rpm · desde 3 m/s</p>
-      <p>Es la velocidad crítica del tornillo: por encima, la fuerza centrífuga vacía los
-      cangilones. El viento extra no sube el caudal. Si tu emplazamiento es ventoso, la
-      mejora rentable es una reducción 2:1 en el mástil.</p>
+      <h4>El caudal tiene tope de volumen</h4>
+      <p class="n">250 rpm &middot; saturado desde 1,6 m/s</p>
+      <p>Por encima de esa velocidad la fuerza centr&iacute;fuga vac&iacute;a los cangilones. La
+      turbina llega ah&iacute; con una brisa m&iacute;nima, as&iacute; que el tornillo est&aacute; saturado casi
+      siempre: el caudal no lo pone el viento, lo pone el volumen de cangil&oacute;n.</p>
     </div>
     <div class="limite">
-      <h4>Cuatro lechugas por tramo</h4>
-      <p class="n">65 mg/h aportados · 60 mg/h consumidos</p>
-      <p>El límite no es el agua sino el oxígeno disuelto, y van justos. Con albahaca o
-      lechuga baby la demanda cae a la mitad y caben seis.</p>
+      <h4>Tres o cuatro lechugas por tramo</h4>
+      <p class="n">51 mg/h aportados &middot; 15 mg/h por planta</p>
+      <p>El l&iacute;mite no es el agua sino el ox&iacute;geno disuelto. Con albahaca o lechuga baby
+      la demanda cae a la mitad y caben seis o siete.</p>
     </div>
     <div class="limite">
       <h4>Las calmas se notan en minutos</h4>
-      <p class="n">6 min de reserva disuelta</p>
-      <p>Lo que sostiene la planta cuando para el viento no es el agua almacenada sino la
-      raíz que respira en aire húmedo. Por eso el Tapón B lleva respiraderos y el manguito
-      de entrada no cierra.</p>
+      <p class="n">7 min de reserva disuelta</p>
+      <p>Lo que sostiene la planta cuando para el viento no es el agua almacenada sino
+      la ra&iacute;z que respira en aire h&uacute;medo. Por eso el Tap&oacute;n B lleva respiraderos y el
+      manguito de entrada no cierra.</p>
     </div>
     <div class="limite">
-      <h4>La nivelación es fina</h4>
+      <h4>La nivelaci&oacute;n es fina</h4>
       <p class="n">ventana de 23 mm</p>
-      <p>El depósito tiene que quedar con su lámina prácticamente a la altura de la base de
-      la carcasa. Es la única cota del montaje que no se puede corregir después apretando
-      un tornillo.</p>
+      <p>El dep&oacute;sito tiene que quedar con su l&aacute;mina pr&aacute;cticamente a la altura de la base
+      de la carcasa. Es la &uacute;nica cota del montaje que no se corrige despu&eacute;s apretando un
+      tornillo.</p>
+    </div>
+  </div>
+  <p class="lede" style="margin-top:26px"><strong>Correcci&oacute;n sobre la velocidad
+  cr&iacute;tica.</strong> Una versi&oacute;n anterior de esta p&aacute;gina daba 427&nbsp;rpm, usando la
+  f&oacute;rmula de Muysken <em>N</em>&nbsp;=&nbsp;50/<em>D</em><sup>2/3</sup>. Esa f&oacute;rmula est&aacute;
+  calibrada para tornillos hidr&aacute;ulicos de obra: entre 0,5 y 2&nbsp;m mantiene la
+  aceleraci&oacute;n centr&iacute;peta del radio exterior en 1,3&ndash;1,4&nbsp;g, pero extrapolada a
+  &Oslash;40 pide 4,1&nbsp;g, que no es el mecanismo. El centrifugado exige
+  <em>N</em>&nbsp;&prop;&nbsp;<em>D</em><sup>&minus;1/2</sup>: recalibrando sobre el punto
+  de 1&nbsp;m salen 250&nbsp;rpm, y el criterio puro de tambor
+  (&omega;&sup2;<em>R</em>&nbsp;=&nbsp;<em>g</em>) da 211. El caudal baja de 0,5 a
+  0,28&nbsp;L/min.</p>
+</section>
+
+<section class="bloque">
+  <p class="eyebrow">C&oacute;mo subir cada techo</p>
+  <h2>Seis intervenciones, por rentabilidad</h2>
+  <p class="lede">Las dos primeras no tocan el dise&ntilde;o y se llevan la mitad del
+  problema. Las cuatro siguientes se encadenan: bajar la inclinaci&oacute;n desbloquea a la
+  vez m&aacute;s volumen de cangil&oacute;n, una ventana de nivel m&aacute;s ancha y una reducci&oacute;n dentro
+  del propio par c&oacute;nico.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th></th><th>Intervenci&oacute;n</th><th>Techo</th><th>Ganancia</th><th>Coste</th></tr></thead>
+      <tbody>
+        <tr><td class="rank">01</td><td>Sombrear canal y dep&oacute;sito: 24&nbsp;&rarr;&nbsp;20&nbsp;&deg;C</td>
+            <td>plantas, calmas</td><td class="gana">+40 % plantas</td>
+            <td class="cst">ninguno</td></tr>
+        <tr><td class="rank">02</td><td>V&aacute;lvula de flotador en el dep&oacute;sito</td>
+            <td>nivelaci&oacute;n</td><td class="gana">el techo desaparece</td>
+            <td class="cst">~5 &euro;, pieza comercial</td></tr>
+        <tr><td class="rank">03</td><td>Recogedor anular en la corona en vez de boquilla lateral</td>
+            <td>nivelaci&oacute;n</td><td class="gana">ventana 23 &rarr; 63 mm</td>
+            <td class="cst">redise&ntilde;ar el vertido</td></tr>
+        <tr><td class="rank">04</td><td>Inclinaci&oacute;n 40&deg; &rarr; 32&deg;, con el recogedor</td>
+            <td>caudal</td><td class="gana">&times;1,6 &middot; ventana 45 mm</td>
+            <td class="cst">un par&aacute;metro y reverificar</td></tr>
+        <tr><td class="rank">05</td><td>Inclinaci&oacute;n 25&deg; y reducci&oacute;n 1,5:1 en el propio par</td>
+            <td>caudal</td><td class="gana">&times;2,4 sin etapa extra</td>
+            <td class="cst">redise&ntilde;ar los engranajes</td></tr>
+        <tr><td class="rank">06</td><td>Tornillo &Oslash;40 &rarr; &Oslash;50</td>
+            <td>caudal</td><td class="gana">&times;2,9 &middot; &times;4,3 con 32&deg;</td>
+            <td class="cst">+40 % filamento, 4 piezas</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lede" style="margin-top:24px">Se acumulan: sombra m&aacute;s &Oslash;50 a 32&deg; llevan el
+  caudal de 0,28 a 1,26&nbsp;L/min y las plantas de 3&ndash;4 a unas 20. La reducci&oacute;n dentro
+  del par c&oacute;nico solo es geom&eacute;tricamente posible por debajo de 30&deg;: a 40&deg; una relaci&oacute;n
+  2:1 exigir&iacute;a un engranaje de corona, que no se puede extruir.</p>
+
+  <h3 style="font-size:1.15rem;font-weight:600;margin-top:34px">Lo que no funciona</h3>
+  <div class="limites" style="margin-top:16px">
+    <div class="limite">
+      <h4>Tornillo de varias entradas</h4>
+      <p class="n">&minus;14 % por cada entrada extra</p>
+      <p>Parece que dos entradas dupliquen los cangilones, pero el agua est&aacute; limitada por
+      el mismo plano y el mismo anillo: cada filete a&ntilde;adido solo le quita sitio.</p>
+    </div>
+    <div class="limite">
+      <h4>M&aacute;s volumen de canal para las calmas</h4>
+      <p class="n">har&iacute;a falta &times;10 para una hora</p>
+      <p>La reserva es lineal con el volumen y la demanda no baja. Un canal el doble de
+      largo aguanta el doble de minutos y sostiene las mismas plantas.</p>
+    </div>
+    <div class="limite">
+      <h4>Dep&oacute;sito acumulador elevado</h4>
+      <p class="n">18 L para una hora</p>
+      <p>Funciona en principio &mdash;se llena con r&aacute;fagas y drena despacio&mdash; pero tiene que
+      ir por encima de la l&aacute;mina del canal y por debajo de la boquilla: 45 mm de altura
+      &uacute;til para 18 litros son 40&nbsp;&times;&nbsp;40&nbsp;cm de planta.</p>
+    </div>
+    <div class="limite">
+      <h4>Reducci&oacute;n como multiplicador de caudal</h4>
+      <p class="n">no sube el techo</p>
+      <p>Solo elige a qu&eacute; viento se alcanza. Sirve como seguro contra el
+      sobrerr&eacute;gimen &mdash;a 6 m/s el tornillo gira casi cuatro veces por encima de su
+      cr&iacute;tica&mdash; no para bombear m&aacute;s.</p>
     </div>
   </div>
 </section>
