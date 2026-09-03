@@ -1,0 +1,19 @@
+{
+    "name": "CaminaFeliz.VRBrowser.Integration",
+    "rootNamespace": "CaminaFeliz.VRBrowser.Integration",
+    "references": [
+        "CaminaFeliz.VRBrowser.Runtime",
+        "TLab.WebView.Runtime",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
