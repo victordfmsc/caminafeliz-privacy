@@ -7,7 +7,18 @@ visor.
 tools/build_quest_apk.sh              # solo compila -> Build/CaminaFelizVRBrowser.apk
 tools/build_quest_apk.sh --install    # compila e instala en el visor conectado
 tools/build_quest_apk.sh --release    # build de release en vez de development
+tools/build_quest_apk.sh --install-only   # instala un APK ya compilado, sin recompilar
 ```
+
+`--install-only` existe porque el fallo más habitual no es el build: es que el
+visor no estaba autorizado la primera vez. Recompilar entero para reintentar un
+`adb install` de tres segundos no tiene sentido.
+
+## Esto se ejecuta en TU máquina
+
+El visor tiene que estar conectado por USB al ordenador donde corres el script.
+No hay forma de instalar en un Quest desde una máquina remota: `adb` necesita el
+puerto USB físico (o el visor en la misma red local, con `adb connect`).
 
 El script no abre el Editor: lo lanza en `-batchmode`, ejecuta
 `QuestBuildPipeline.BuildFromCommandLine`, y devuelve código distinto de cero si

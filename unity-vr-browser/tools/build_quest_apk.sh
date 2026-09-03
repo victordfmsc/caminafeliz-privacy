@@ -4,24 +4,33 @@
 #   tools/build_quest_apk.sh                  # development APK
 #   tools/build_quest_apk.sh --release        # release APK
 #   tools/build_quest_apk.sh --install        # compila e instala en el visor
+#   tools/build_quest_apk.sh --install-only   # instala un APK ya compilado
 #   UNITY_PATH=/ruta/al/Unity tools/build_quest_apk.sh
 set -euo pipefail
 
 project="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 build_type="development"
 install_after=0
+build_first=1
 output="Build/CaminaFelizVRBrowser.apk"
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --release) build_type="release" ;;
     --install) install_after=1 ;;
+    --install-only) install_after=1; build_first=0 ;;
     --output)  output="$2"; shift ;;
-    -h|--help) sed -n '2,7p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help) sed -n '2,8p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "Opción desconocida: $1" >&2; exit 2 ;;
   esac
   shift
 done
+
+apk_path() {
+  if [ -f "${project}/${output}" ]; then printf '%s' "${project}/${output}"
+  elif [ -f "${output}" ];           then printf '%s' "${output}"
+  fi
+}
 
 # --- localizar el Editor ------------------------------------------------------
 # La versión exacta la manda el proyecto: abrirlo con otra dispara una migración
@@ -48,6 +57,8 @@ find_unity() {
                 /Applications/Unity/Hub/Editor/*/Unity.app/Contents/MacOS/Unity 2>/dev/null | head -1 || true)"
   printf '%s' "${any}"
 }
+
+if [ ${build_first} -eq 1 ]; then
 
 unity="$(find_unity)"
 
@@ -98,8 +109,15 @@ if [ ${status} -ne 0 ]; then
   exit ${status}
 fi
 
-apk="${project}/${output}"
-[ -f "${apk}" ] || apk="${output}"
+fi   # fin del bloque de compilación
+
+apk="$(apk_path)"
+
+if [ -z "${apk}" ]; then
+  echo "No encuentro ningún APK en ${output}." >&2
+  echo "Compílalo primero: tools/build_quest_apk.sh" >&2
+  exit 1
+fi
 
 echo
 echo "APK listo: ${apk}"
