@@ -41,7 +41,7 @@ namespace CaminaFeliz.VRBrowser.Tests
 
         [TestCase("")]
         [TestCase("   ")]
-        [TestCase(null)]
+        [TestCase((string)null)]
         public void Resolve_ReturnsEmptyForBlankInput(string input) =>
             Assert.AreEqual(string.Empty, UrlUtility.Resolve(input, Template));
 

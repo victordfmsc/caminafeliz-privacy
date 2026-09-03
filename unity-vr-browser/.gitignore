@@ -42,3 +42,7 @@ Thumbs.db
 # Crashlytics / sentry style symbol dumps
 crashlytics-build.properties
 sysinfo.txt
+
+# Artefactos de distribución (se regeneran con tools/make_unity_package.py)
+*.unitypackage
+caminafeliz-vr-browser-unity-project.zip
