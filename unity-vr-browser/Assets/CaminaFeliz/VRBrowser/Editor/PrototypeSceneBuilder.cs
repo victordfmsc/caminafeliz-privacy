@@ -30,8 +30,32 @@ namespace CaminaFeliz.VRBrowser.Editor
         private const string SampleUrl =
             "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
 
+        /// <summary>Where the generated scene is saved when a build needs one on disk.</summary>
+        public const string ScenePath = "Assets/CaminaFeliz/VRBrowser/Scenes/Prototype360.unity";
+
         [MenuItem(MenuRoot + "Build 360 + Passthrough Prototype Scene")]
-        public static void Build()
+        public static void Build() => BuildScene();
+
+        /// <summary>
+        /// Generate the scene and write it to disk. A player build needs a scene
+        /// asset, not one living only in memory.
+        /// </summary>
+        public static string BuildAndSave(string path = ScenePath)
+        {
+            var scene = BuildScene();
+
+            var directory = System.IO.Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directory))
+                System.IO.Directory.CreateDirectory(directory);
+
+            EditorSceneManager.SaveScene(scene, path);
+            AssetDatabase.Refresh();
+
+            Debug.Log($"[VRBrowser] Escena guardada en {path}");
+            return path;
+        }
+
+        private static Scene BuildScene()
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 
@@ -62,6 +86,8 @@ namespace CaminaFeliz.VRBrowser.Editor
                 "against the video, which is how the real passthrough mix behaves.\n" +
                 "On device, add an OVRCameraRig with an OVRPassthroughLayer, put MetaPassthroughController on it, " +
                 "and drop it into Reality Mix in place of the simulated one. See docs/05-passthrough-360.md.");
+
+            return scene;
         }
 
         private static void EnsureEventSystem()

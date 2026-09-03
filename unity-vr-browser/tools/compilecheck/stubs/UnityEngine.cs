@@ -229,7 +229,13 @@ namespace UnityEngine
 
     public static class Time { public static float deltaTime => 0.016f; }
 
-    public static class Application { public static bool isPlaying => false; }
+    public static class Application
+    {
+        public static bool isPlaying => false;
+        public static bool isBatchMode => false;
+    }
+
+    public enum LogType { Error, Assert, Warning, Log, Exception }
 
     public static class JsonUtility
     {

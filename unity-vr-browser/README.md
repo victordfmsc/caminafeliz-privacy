@@ -20,11 +20,13 @@ desde cero.
 | Entender cómo encaja el código | [docs/02-arquitectura.md](docs/02-arquitectura.md) |
 | Compilar y ejecutar en el visor | [docs/03-setup-quest.md](docs/03-setup-quest.md) |
 | **Passthrough y vídeo 360** | [docs/05-passthrough-360.md](docs/05-passthrough-360.md) |
+| **Compilar el APK e instalarlo en el visor** | [docs/06-build-apk-quest.md](docs/06-build-apk-quest.md) |
 | Ver qué falta | [docs/04-roadmap.md](docs/04-roadmap.md) |
 
 ```bash
 ./tools/bootstrap.sh              # comprueba el entorno y lista los pasos manuales
 ./tools/compilecheck/run.sh       # compila y pasa los tests SIN Unity (necesita dotnet)
+./tools/build_quest_apk.sh --install   # compila el APK y lo instala en el Quest
 ```
 
 ## Cómo importarlo en Unity
@@ -47,6 +49,22 @@ Los dos artefactos se regeneran con:
 python3 tools/make_unity_package.py --metas --package CaminaFelizVRBrowser.unitypackage
 ```
 
+## Ponerlo en el visor
+
+```bash
+tools/build_quest_apk.sh --install
+```
+
+Lanza Unity en `-batchmode`, compila el APK y lo instala por `adb`. Si Build
+Settings está vacío, genera la escena prototipo antes de compilar, para que un
+primer build en un clon recién bajado produzca algo que puedas ponerte.
+
+Antes del primer build hay **dos ajustes que hay que hacer a mano una vez** —
+marcar `Oculus` en XR Plug-in Management, y el `Update AndroidManifest.xml` de
+Meta para el passthrough. Sin el primero la app arranca plana; sin el segundo el
+deslizante no muestra realidad. Los dos, y el modo desarrollador del visor, en
+[docs/06-build-apk-quest.md](docs/06-build-apk-quest.md).
+
 **Prototipo en 10 minutos, sin visor:** abre el proyecto y usa
 `Tools ▸ CaminaFeliz VR Browser ▸ Build 360 + Passthrough Prototype Scene`.
 Genera la escena cableada con un clip de prueba; al darle a Play, el deslizante
@@ -64,7 +82,7 @@ Assets/CaminaFeliz/VRBrowser/
 │   ├── Immersive/     Reproductor 360, mezcla realidad/vídeo, detector de
 │   │                  vídeos de la página, modo inmersivo
 │   └── Integration/   TLabWebViewBackend, scroll con joystick  (única capa acoplada)
-├── Editor/            Ajustes de build de Quest + generador de la escena prototipo
+├── Editor/            Ajustes de build, generador de escena y pipeline del APK
 └── Tests/             EditMode: resolución de URLs e historial
 
 Assets/CaminaFeliz/App/

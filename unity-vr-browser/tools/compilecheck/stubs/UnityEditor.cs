@@ -21,6 +21,8 @@ namespace UnityEditor
             public static AndroidSdkVersions targetSdkVersion { get; set; }
             public static AndroidArchitecture targetArchitectures { get; set; }
             public static bool forceInternetPermission { get; set; }
+            public static bool useCustomKeystore { get; set; }
+            public static int bundleVersionCode { get; set; }
         }
         public static void SetScriptingBackend(BuildTargetGroup g, ScriptingImplementation i) { }
         public static ScriptingImplementation GetScriptingBackend(BuildTargetGroup g) => ScriptingImplementation.IL2CPP;
@@ -28,15 +30,55 @@ namespace UnityEditor
         public static void SetGraphicsAPIs(BuildTarget t, UnityEngine.Rendering.GraphicsDeviceType[] apis) { }
         public static string GetScriptingDefineSymbolsForGroup(BuildTargetGroup g) => "";
         public static void SetScriptingDefineSymbolsForGroup(BuildTargetGroup g, string defines) { }
+        public static string companyName { get; set; }
+        public static string productName { get; set; }
+        public static void SetApplicationIdentifier(BuildTargetGroup g, string id) { }
     }
 
     public static class EditorUserBuildSettings
     {
         public static BuildTarget activeBuildTarget => BuildTarget.Android;
+        public static bool buildAppBundle { get; set; }
         public static bool SwitchActiveBuildTarget(BuildTargetGroup g, BuildTarget t) => true;
     }
 
-    public static class AssetDatabase { public static void SaveAssets() { } }
+    public static class AssetDatabase
+    {
+        public static void SaveAssets() { }
+        public static void Refresh() { }
+    }
+
+    public static class EditorApplication { public static void Exit(int code) { } }
+
+    [Flags]
+    public enum BuildOptions { None = 0, Development = 1, AllowDebugging = 2 }
+
+    public struct BuildPlayerOptions
+    {
+        public string[] scenes;
+        public string locationPathName;
+        public BuildTarget target;
+        public BuildTargetGroup targetGroup;
+        public BuildOptions options;
+    }
+
+    public class EditorBuildSettingsScene
+    {
+        public EditorBuildSettingsScene(string path, bool enabled) { this.path = path; this.enabled = enabled; }
+        public string path { get; set; }
+        public bool enabled { get; set; }
+    }
+
+    public static class EditorBuildSettings
+    {
+        public static EditorBuildSettingsScene[] scenes { get; set; } = new EditorBuildSettingsScene[0];
+    }
+
+    public static class BuildPipeline
+    {
+        public static Build.Reporting.BuildReport BuildPlayer(BuildPlayerOptions options) =>
+            new Build.Reporting.BuildReport();
+    }
     public static class Selection { public static UnityEngine.Object activeObject { get; set; } }
 
     [AttributeUsage(AttributeTargets.Method)]
@@ -74,5 +116,32 @@ namespace UnityEditor.SceneManagement
     {
         public static Scene NewScene(NewSceneSetup setup, NewSceneMode mode) => new Scene();
         public static void MarkSceneDirty(Scene s) { }
+        public static bool SaveScene(Scene s, string path) => true;
+    }
+}
+
+namespace UnityEditor.Build.Reporting
+{
+    using System;
+    using UnityEngine;
+
+    public enum BuildResult { Unknown, Succeeded, Failed, Cancelled }
+
+    public class BuildSummary
+    {
+        public BuildResult result = BuildResult.Succeeded;
+        public ulong totalSize = 0;
+        public TimeSpan totalTime = TimeSpan.Zero;
+        public int totalErrors = 0;
+    }
+
+    public struct BuildStepMessage { public LogType type; public string content; }
+
+    public class BuildStep { public string name; public BuildStepMessage[] messages = new BuildStepMessage[0]; }
+
+    public class BuildReport
+    {
+        public BuildSummary summary { get; } = new BuildSummary();
+        public BuildStep[] steps { get; } = new BuildStep[0];
     }
 }

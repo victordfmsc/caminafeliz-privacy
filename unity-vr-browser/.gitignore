@@ -46,3 +46,6 @@ sysinfo.txt
 # Artefactos de distribución (se regeneran con tools/make_unity_package.py)
 *.unitypackage
 caminafeliz-vr-browser-unity-project.zip
+
+# Salida del build
+Build/
