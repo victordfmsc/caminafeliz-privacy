@@ -2,7 +2,8 @@
     "name": "CaminaFeliz.VRBrowser.Editor",
     "rootNamespace": "CaminaFeliz.VRBrowser.Editor",
     "references": [
-        "CaminaFeliz.VRBrowser.Runtime"
+        "CaminaFeliz.VRBrowser.Runtime",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [
         "Editor"

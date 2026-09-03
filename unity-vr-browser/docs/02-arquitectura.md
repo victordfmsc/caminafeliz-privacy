@@ -2,9 +2,15 @@
 
 ## La decisión que sostiene todo lo demás
 
-Nada por encima de `IWebViewBackend` sabe que existen Android, JNI o
-TLabWebView. Toda la comunicación con el motor pasa por una interfaz de ~15
-métodos.
+Una frontera pequeña por cada cosa que necesita hardware, y cada una con dos
+implementaciones: la real y una simulada.
+
+- `IWebViewBackend` (~15 métodos) — el motor web. Nada por encima sabe que
+  existen Android, JNI o TLabWebView.
+- `PassthroughController` (3 miembros) — las cámaras del visor.
+
+Ambos plugins renderizan **nada** fuera del dispositivo, así que sin las
+versiones simuladas el proyecto entero solo se puede ver a golpe de build.
 
 ```
         VrBrowserChrome        VrPointerInput      VrThumbstickScroll
@@ -56,6 +62,12 @@ se tocan.
 | `VrKeyboardBridge` | Cualquier teclado (TLab, XRI, sistema Meta, físico) | Acoplado al teclado XRI de los samples |
 | `PrivacyController` | Borrar caché/cookies/historial, DNT, borrado al salir | No existe |
 | `VrBrowserProjectSetup` | Ajustes de build aplicables y auditables | Una checklist de clics en el README |
+| `PassthroughController` | Frontera con las cámaras del visor + simulación en Editor | n/a |
+| `Video360Player` | 360/180, mono/OU/SBS, layout adivinado del nombre | n/a |
+| `RealityMix` | El deslizante realidad↔vídeo, con crossfade real | n/a |
+| `WebVideoDetector` | Saca la URL del `<video>` de la página vía puente JS | n/a |
+| `ImmersiveModeController` | Alterna panel plano ↔ 360 y pausa el vídeo de la página | n/a |
+| `PrototypeSceneBuilder` | Genera la escena cableada de un clic | n/a |
 
 ## Detalles que cuesta caro descubrir a mano
 
@@ -85,6 +97,21 @@ Tres cosas que el plugin exige y no documenta en su API, resueltas dentro de
 
 Esa separación es la que hace verificable la afirmación "el motor está aislado":
 si alguien mete una llamada a TLab en la capa VR, **no compila**.
+
+## Sobre la mezcla realidad/vídeo
+
+La mezcla la hace el compositor del visor
+(`OVRPassthroughLayer.textureOpacity`), no un shader en nuestra escena: sigue
+enganchada a la cabeza aunque baje el frame rate, no cuesta un dibujado
+transparente a pantalla completa, y esquiva el problema conocido de las
+transparencias contra passthrough en underlay. El detalle, y la contrapartida
+(la UI se tiñe), está en [05-passthrough-360.md](05-passthrough-360.md).
+
+`MetaPassthroughController` vive **fuera de todo asmdef**, a propósito: el SDK de
+Meta se instala o como paquete UPM con su propio ensamblado, o desde el Asset
+Store sin ninguno, en cuyo caso `OVRPassthroughLayer` acaba en `Assembly-CSharp`,
+que ningún asmdef puede referenciar. Estar en `Assembly-CSharp` funciona con las
+dos formas de instalación.
 
 ## Sobre paneles curvos
 

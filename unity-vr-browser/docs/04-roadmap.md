@@ -1,19 +1,37 @@
 # Roadmap
 
-Estado actual: **integración base + capa propia**. Compila la arquitectura, falta
-montar la escena en el Editor y validarla en dispositivo.
+Estado actual: **integración base + capa propia + reproductor 360 con mezcla de
+passthrough**. Compila la arquitectura y la escena prototipo se genera desde el
+Editor; falta validarla en dispositivo.
 
-## Fase 0 — Validar en Quest (siguiente paso, bloqueante)
+El producto es un **navegador con passthrough que además reproduce vídeo 360
+mezclado con la realidad**. Esa mezcla es la función distintiva, así que se
+valida antes que cualquier función de navegador.
 
-Nada de lo de abajo tiene sentido hasta que una página real se pinte y se pueda
-tocar en el visor.
+## Fase 0 — Validar el prototipo en Quest (siguiente paso, bloqueante)
 
-- [ ] Montar la escena según [03-setup-quest.md](03-setup-quest.md).
-- [ ] Build y deploy; cargar una página y pulsar un enlace con el rayo.
-- [ ] Medir: fps del compositor, coste de `UpdateFrame` en el Profiler, y
-      legibilidad real del texto a 1,2 m.
-- [ ] Ajustar `viewSize` / `textureSize` / `widthMeters` con esa medida, no a ojo.
-- [ ] Fijar el commit exacto del plugin en `Packages/manifest.json`.
+Nada de lo de abajo tiene sentido hasta que esto funcione en un visor real.
+
+- [ ] `Build 360 + Passthrough Prototype Scene` y comprobar en el Editor que el
+      deslizante cruza vídeo contra realidad simulada.
+- [ ] Añadir `OVRCameraRig` + `OVRPassthroughLayer` + `MetaPassthroughController`
+      y sustituir el controlador simulado.
+- [ ] Build a dispositivo: **un .mp4 360 directo reproduciéndose con el
+      deslizante moviendo la mezcla**. Ese es el hito del prototipo.
+- [ ] Medir: fps del compositor, coste de decodificación a 4K y a 8K, memoria de
+      la `RenderTexture`. Ajustar resolución con esa medida, no a ojo.
+- [ ] Comprobar si el tinte del overlay sobre la barra de control molesta lo
+      suficiente como para pasar a underlay.
+- [ ] Fijar el commit exacto del plugin web en `Packages/manifest.json`.
+
+## Fase 0.5 — Unir navegador y 360
+
+- [ ] Montar la escena del navegador (docs/03) junto a la del reproductor.
+- [ ] Verificar el puente `window.tlab` en dispositivo: abrir un .mp4 360 directo
+      y que aparezca el botón de "ver en 360".
+- [ ] Comprobar que pausar el vídeo de la página evita el audio doble.
+- [ ] Mensaje claro y honesto cuando la página use MediaSource (YouTube), en vez
+      de un botón que no hace nada.
 
 ## Fase 1 — Navegador usable
 
@@ -24,6 +42,14 @@ tocar en el visor.
 - [ ] Zoom (`WebView.ZoomIn`/`ZoomOut`) en el joystick.
 - [ ] Descargas con UI: el plugin ya emite `onDownloadStart/Finish/Error` y
       expone progreso; hoy nadie los escucha.
+
+## Fase 1.5 — El 360 como producto
+
+- [ ] Controles de reproducción en VR: barra de progreso, volumen, saltar.
+- [ ] Recentrar el panorama sobre la mirada actual (`Video360Player.SetRotation`).
+- [ ] Selector manual de layout cuando la heurística del nombre falla.
+- [ ] Presets de mezcla en un botón del mando (solo vídeo / mixto / solo realidad).
+- [ ] Vídeo local del visor y descargas desde el navegador al reproductor.
 
 ## Fase 2 — Ergonomía VR
 
@@ -55,3 +81,5 @@ tocar en el visor.
 | Backend PCVR (UnityWebBrowser) | Si el producto sale también en SteamVR. La capa de abstracción ya lo admite |
 | Comprar Vuplex 3D WebView | Si hacen falta 3+ plataformas con una sola API. Sale más barato que mantener dos backends |
 | Forkear Wolvic | **Si WebXR pasa a ser requisito.** No es una fase, es otro proyecto: cambia la base entera |
+| Extractor de streams (YouTube) | Si reproducir 360 de YouTube pasa a ser requisito. Es otro proyecto, con preguntas legales propias |
+| Passthrough en underlay | Si el tinte del overlay sobre la UI resulta inaceptable. Cuesta pelearse con transparencias |

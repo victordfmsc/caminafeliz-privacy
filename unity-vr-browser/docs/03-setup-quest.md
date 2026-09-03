@@ -46,21 +46,22 @@ llamable desde CI (`VrBrowserProjectSetup.Collect()`).
 
 ### La trampa del permiso de Internet
 
-El plugin de OpenXR trae activado **"Force Remove Internet Permission"** en XR
-Plug-in Management. Con eso el navegador no carga nada, no da error y el panel se
-queda negro. Es el fallo más caro de diagnosticar de todo el montaje.
+El plugin de XR trae activado **"Force Remove Internet Permission"** en XR
+Plug-in Management (tanto el de Oculus como el de OpenXR). Con eso el navegador
+no carga nada, no da error y el panel se queda negro. Es el fallo más caro de diagnosticar de todo el montaje.
 
 ## 3. XR
 
-1. `Project Settings ▸ XR Plug-in Management ▸ Android` → activar **OpenXR**.
-2. En OpenXR, activar el grupo de features **Meta Quest** e **Interaction
-   Profiles** de los mandos táctiles Oculus.
+1. `Project Settings ▸ XR Plug-in Management ▸ Android` → activar **Oculus**.
+2. `Project Settings ▸ Meta XR` (o el `OVRManager` de la escena) → activar
+   **Passthrough Support: Required** y **Quest 3 / 3S** en los dispositivos.
 3. Importar los *Starter Assets* del XR Interaction Toolkit desde el Package
    Manager (traen el rig y los action maps).
 
-Se usa OpenXR + XRI en vez del Meta XR All-in-One SDK a propósito: menos
-acoplamiento de versión, y el proyecto de referencia ya trae una variante del
-prefab preparada para XRI.
+Se usa el plugin **Oculus** y no OpenXR porque el control del passthrough
+depende de `OVRPassthroughLayer.textureOpacity`, y esa es la ruta mejor probada
+y la que usa el proyecto de referencia. El XR Interaction Toolkit se mantiene
+para la interacción; conviven sin problema.
 
 ## 4. Escena
 
@@ -110,7 +111,7 @@ Con el visor en modo desarrollador y conectado por USB. Para depurar:
 
 | Síntoma | Causa probable |
 |---|---|
-| Panel negro, sin errores | Internet permission eliminada por OpenXR |
+| Panel negro, sin errores | Internet permission eliminada por el plugin de XR |
 | Páginas lavadas de color | Color Space en Gamma |
 | Panel congelado en la primera imagen | Nadie llama a `UpdateFrame()` (el backend lo hace en `Update`) |
 | La barra de URL nunca se actualiza | Falta `DispatchMessageQueue()`; los eventos de página salen de esa cola |

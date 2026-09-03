@@ -51,7 +51,7 @@ namespace CaminaFeliz.VRBrowser.Editor
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
 
             // A browser without Internet permission is a black panel and no error.
-            // OpenXR's "Force Remove Internet Permission" is the usual culprit.
+            // The XR plug-in's "Force Remove Internet Permission" is the usual culprit.
             PlayerSettings.Android.forceInternetPermission = true;
 
             // OpenGLES3 is the combination the engine is best tested against.
