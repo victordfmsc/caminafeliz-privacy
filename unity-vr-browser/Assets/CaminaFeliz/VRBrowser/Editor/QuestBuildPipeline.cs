@@ -135,8 +135,8 @@ namespace CaminaFeliz.VRBrowser.Editor
             if (configured.Length > 0)
                 return configured;
 
-            Debug.Log("[VRBrowser] Build Settings vacío: genero la escena prototipo.");
-            var generated = PrototypeSceneBuilder.BuildAndSave();
+            Debug.Log("[VRBrowser] Build Settings vacío: genero la escena principal.");
+            var generated = SceneComposer.ComposeAndSave();
 
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(generated, true) };
             return new[] { generated };

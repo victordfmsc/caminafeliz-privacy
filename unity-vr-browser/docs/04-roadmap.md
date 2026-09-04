@@ -12,10 +12,10 @@ valida antes que cualquier función de navegador.
 
 Nada de lo de abajo tiene sentido hasta que esto funcione en un visor real.
 
-- [ ] `Build 360 + Passthrough Prototype Scene` y comprobar en el Editor que el
+- [ ] Abrir el proyecto: la escena se crea sola. Comprobar en el Editor que el
       deslizante cruza vídeo contra realidad simulada.
-- [ ] Añadir `OVRCameraRig` + `OVRPassthroughLayer` + `MetaPassthroughController`
-      y sustituir el controlador simulado.
+- [ ] Con el Meta XR SDK resuelto, `Create or Rebuild Main Scene` monta el
+      `OVRCameraRig` y el passthrough real. Verificar en el log qué detectó.
 - [ ] Build a dispositivo: **un .mp4 360 directo reproduciéndose con el
       deslizante moviendo la mezcla**. Ese es el hito del prototipo.
 - [ ] Medir: fps del compositor, coste de decodificación a 4K y a 8K, memoria de

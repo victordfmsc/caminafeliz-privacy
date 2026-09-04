@@ -110,6 +110,9 @@ namespace CaminaFeliz.VRBrowser.Editor
             if (!PlayerSettings.Android.forceInternetPermission)
                 problems.Add("Internet permission is not forced; check XR Plug-in Management's 'Force Remove Internet Permission'.");
 
+            if (EditorBuildSettings.scenes.All(scene => !scene.enabled))
+                problems.Add("No hay ninguna escena activa en Build Settings; usa Create or Rebuild Main Scene.");
+
             var defines = CurrentDefines();
             foreach (var define in RequiredDefines.Where(define => !defines.Contains(define)))
                 problems.Add($"Missing scripting define symbol: {define}");

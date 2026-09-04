@@ -65,38 +65,33 @@ para la interacción; conviven sin problema.
 
 ## 4. Escena
 
-El plugin necesita un `BrowserManager` en la escena (recolecta las instancias
-nativas). Ponlo en el mismo objeto que el `EventSystem`.
+**No hay que montarla a mano.** Se genera al abrir el proyecto por primera vez, y
+se puede rehacer cuando quieras:
 
 ```
-XR Origin (XR Rig)
-├── Camera Offset ▸ Main Camera
-└── Left/Right Controller  ← XR Ray Interactor
-
-EventSystem                ← BrowserManager (TLabWebView)
-                             XR UI Input Module
-
-BrowserPanel  (Canvas World Space, TrackedDeviceGraphicRaycaster)
-│                VrPanelPlacement
-├── Surface   (RawImage)  ← VrBrowserPanel · VrPointerInput
-├── Chrome    (barra URL + botones) ← VrBrowserChrome
-└── Engine    ← TLabWebViewBackend + TLab.WebView.WebView
-                 VrThumbstickScroll · VrKeyboardBridge · PrivacyController
+Tools ▸ CaminaFeliz VR Browser ▸ Create or Rebuild Main Scene
 ```
 
-Cableado mínimo:
+Queda en `Assets/CaminaFeliz/VRBrowser/Scenes/CaminaFelizVRBrowser.unity` y se
+añade sola a Build Settings.
 
-- El `WebView` de TLab necesita su `rawImage` apuntando al `RawImage` de Surface.
-- `TLabWebViewBackend.m_browser` → ese mismo `WebView`.
-- `VrBrowserPanel.m_backend` y `.m_surface` → el backend y el `RawImage`.
-- `VrPointerInput.m_backend`, `VrThumbstickScroll.m_backend`,
-  `VrKeyboardBridge.m_backend`, `PrivacyController.m_backend` → el mismo backend.
-- El `Canvas` debe ser **World Space** y llevar `TrackedDeviceGraphicRaycaster`,
-  o el rayo del mando no llega al panel.
+El compositor usa lo que encuentre instalado y **degrada en vez de fallar**:
 
-**Para trabajar en el Editor:** sustituye `TLabWebViewBackend` por
-`SimulatedWebViewBackend` en los mismos huecos. Todo menos el contenido web real
-funciona igual.
+| Si está | Monta | Si no está |
+|---|---|---|
+| Meta XR SDK | `OVRCameraRig` + `OVRPassthroughLayer` + `MetaPassthroughController` | Cámara normal + passthrough simulado |
+| TLabWebView | `WebView` + `TLabWebViewBackend` + `BrowserManager` | `SimulatedWebViewBackend` (rejilla + puntero) |
+| XR Interaction Toolkit | `TrackedDeviceGraphicRaycaster` en los canvas | Aviso en el log |
+
+Así la escena **siempre abre y siempre se puede dar a Play**: con passthrough
+real en el visor, o con sustitutos en el Editor. El log de
+`Create or Rebuild Main Scene` dice pieza por pieza cuál es cuál, y
+`Report Installed Packages` lo consulta sin tocar nada.
+
+Lo único que no genera es la barra de URL: un `TMP_InputField` necesita los
+recursos de TextMesh Pro importados y una fuente, y un campo a medio montar es
+peor que ninguno. Los botones de atrás/adelante/recargar/inicio sí están, y
+`VrBrowserChrome` funciona sin el campo de texto.
 
 ## 5. Build
 

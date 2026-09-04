@@ -65,11 +65,19 @@ Meta para el passthrough. Sin el primero la app arranca plana; sin el segundo el
 deslizante no muestra realidad. Los dos, y el modo desarrollador del visor, en
 [docs/06-build-apk-quest.md](docs/06-build-apk-quest.md).
 
-**Prototipo en 10 minutos, sin visor:** abre el proyecto y usa
-`Tools ▸ CaminaFeliz VR Browser ▸ Build 360 + Passthrough Prototype Scene`.
-Genera la escena cableada con un clip de prueba; al darle a Play, el deslizante
-cruza el vídeo contra una "realidad" simulada. En dispositivo solo cambia una
-pieza: el controlador de passthrough.
+**La escena se crea sola al abrir el proyecto por primera vez.** Un proyecto
+clonado sin ningún asset de escena abre en una escena vacía sin título y con
+Build Settings vacío, y eso se lee como "aquí no hay nada" aunque estén todos los
+scripts. Para rehacerla:
+
+```
+Tools ▸ CaminaFeliz VR Browser ▸ Create or Rebuild Main Scene
+Tools ▸ CaminaFeliz VR Browser ▸ Report Installed Packages
+```
+
+Monta rig, passthrough, navegador y reproductor 360 con lo que encuentre
+instalado. Con el Meta XR SDK resuelto pone el `OVRCameraRig` y el passthrough
+reales; sin él, los simulados — y el log dice pieza por pieza cuál es cuál.
 
 ## Qué hay aquí
 
@@ -79,14 +87,12 @@ Assets/CaminaFeliz/VRBrowser/
 │   ├── Core/          IWebViewBackend, UrlUtility, BrowserSession,
 │   │                  SimulatedWebViewBackend   (sin dependencias del motor)
 │   ├── Vr/            Panel, colocación, puntero, teclado, chrome, privacidad
-│   ├── Immersive/     Reproductor 360, mezcla realidad/vídeo, detector de
-│   │                  vídeos de la página, modo inmersivo
+│   ├── Immersive/     Reproductor 360, mezcla realidad/vídeo, passthrough de
+│   │                  Meta, detector de vídeos de la página, modo inmersivo
 │   └── Integration/   TLabWebViewBackend, scroll con joystick  (única capa acoplada)
-├── Editor/            Ajustes de build, generador de escena y pipeline del APK
+├── Editor/            Ajustes de build, compositor de escena y pipeline del APK
+├── Scenes/            La escena principal (generada, versionada)
 └── Tests/             EditMode: resolución de URLs e historial
-
-Assets/CaminaFeliz/App/
-└── MetaPassthroughController.cs   (fuera de asmdef a propósito: ver el fichero)
 ```
 
 La idea central, aplicada dos veces: **una frontera pequeña por cada cosa que

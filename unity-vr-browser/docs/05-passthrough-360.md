@@ -5,18 +5,23 @@ visor, con un deslizante que va de **solo vídeo** a **solo realidad**.
 
 ## Camino más corto (10 minutos, sin visor)
 
+Abre el proyecto: **la escena se genera sola la primera vez**. Para rehacerla:
+
 ```
-Tools ▸ CaminaFeliz VR Browser ▸ Build 360 + Passthrough Prototype Scene
+Tools ▸ CaminaFeliz VR Browser ▸ Create or Rebuild Main Scene
+Tools ▸ CaminaFeliz VR Browser ▸ Report Installed Packages
 ```
 
-Genera la escena entera cableada, le pone un clip de prueba y la deja lista para
-darle a Play en el Editor. El deslizante funciona: cruza el vídeo contra un color
+Monta rig, passthrough, navegador y reproductor 360 con lo que encuentre
+instalado, y el log te dice pieza por pieza qué es real y qué es simulado. El deslizante funciona: cruza el vídeo contra un color
 de "habitación" simulada. No es tu salón, y no pretende serlo — sirve para
 validar que la curva de mezcla se siente bien y que el cableado es correcto, que
 son las dos cosas que cuestan ciclos de build.
 
-Después, en dispositivo, se sustituye el `SimulatedPassthroughController` por el
-`MetaPassthroughController`, que es la única pieza que necesita el visor.
+Si el Meta XR SDK está resuelto, el compositor pone ya el `OVRCameraRig` y el
+`MetaPassthroughController` reales; si no, deja los simulados y lo dice en el
+log. Volver a lanzar `Create or Rebuild Main Scene` tras instalar el SDK cambia
+las piezas.
 
 ## Cómo se hace la mezcla
 
@@ -41,7 +46,7 @@ centro del deslizante se convierte en una sopa ilegible. Así que el vídeo se
 atenúa exactamente lo mismo que se está cubriendo (`_Exposure` del skybox).
 
 **Contrapartida del overlay:** la barra de control también se tiñe según sube el
-deslizante. Si molesta, `MetaPassthroughController.m_placement` a `Underlay`,
+deslizante. Si molesta, el campo `Placement` del `MetaPassthroughController` a `Underlay`,
 cámara en Solid Color con alfa 0 y post-procesado desactivado. Está previsto,
 pero es el camino con más aristas.
 
@@ -83,21 +88,29 @@ archivos locales del visor.
 Otra limitación: el puente `window.tlab` **solo existe en el motor `WebView`**,
 no en `GeckoView`. Con Gecko seleccionado, el detector no encuentra nada.
 
-## Cableado en dispositivo
+## Lo que genera el compositor
 
 ```
-OVRCameraRig                    ← OVRManager (Passthrough Support: Required)
-└── OVRPassthroughLayer         ← Placement: Overlay
-    └── MetaPassthroughController
-
-360 Video Player                ← VideoPlayer + Video360Player
+OVRCameraRig                    ← OVRPassthroughLayer + MetaPassthroughController
+Directional Light
+EventSystem                     ← BrowserManager (TLab)
+360 Video Player                ← VideoPlayer + Video360Player + PrototypeAutoPlay
 Reality Mix                     ← RealityMix (passthrough + player)
-Immersive Bar (Canvas)          ← Slider → RealityMix.SetMix
-
-Browser Root                    ← el panel del navegador (docs/03)
-└── Web Video Detector          ← WebVideoDetector (nombre del objeto ÚNICO)
+Immersive Bar (Canvas)          ← Slider → RealityMix.SetMix, play/pausa, presets
+Browser                         ← VrPanelPlacement, VrKeyboardBridge, PrivacyController
+├── Panel (Canvas World Space)
+│   ├── Surface (RawImage)      ← VrBrowserPanel + VrPointerInput
+│   ├── Chrome                  ← VrBrowserChrome (atrás/adelante/recargar/inicio)
+│   ├── Ver en 360              ← se enciende solo si la página tiene vídeo servible
+│   └── Engine                  ← TLab WebView + TLabWebViewBackend (o simulado)
+└── Web Video Detector          ← WebVideoDetector (nombre ÚNICO en la escena)
 Immersive Mode Controller       ← ata las dos mitades
 ```
+
+La barra de URL no se genera: un `TMP_InputField` necesita los recursos de
+TextMesh Pro importados y una fuente, y un campo a medio montar es peor que
+ninguno. Añádelo a mano y asígnalo a `VrBrowserChrome.m_addressField`; el resto
+del chrome funciona sin él.
 
 Dos detalles que cuestan una tarde si se pasan por alto:
 

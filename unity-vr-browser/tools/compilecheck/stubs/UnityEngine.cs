@@ -51,6 +51,7 @@ namespace UnityEngine
     public struct Quaternion
     {
         public static Quaternion identity => new Quaternion();
+        public static Quaternion Euler(float x, float y, float z) => identity;
         public static Quaternion Slerp(Quaternion a, Quaternion b, float t) => a;
         public static Quaternion LookRotation(Vector3 f, Vector3 u) => identity;
     }
@@ -96,6 +97,7 @@ namespace UnityEngine
         public override int GetHashCode() => base.GetHashCode();
         public static T FindObjectOfType<T>() where T : Object => null;
         public static T[] FindObjectsOfType<T>() where T : Object => new T[0];
+        public static T[] FindObjectsOfType<T>(bool includeInactive) where T : Object => new T[0];
     }
 
     public class Component : Object
@@ -119,6 +121,7 @@ namespace UnityEngine
         public Transform parent { get; set; }
         public Vector3 InverseTransformPoint(Vector3 p) => p;
         public void SetParent(Transform p, bool worldPositionStays) { }
+        public Transform Find(string name) => new RectTransform();
         public IEnumerator GetEnumerator() => new List<Transform>().GetEnumerator();
     }
 
@@ -146,6 +149,9 @@ namespace UnityEngine
         public void SetActive(bool active) { }
         public T GetComponent<T>() where T : Component => null;
         public T AddComponent<T>() where T : Component => null;
+        public Component GetComponent(Type type) => null;
+        public Component AddComponent(Type type) => null;
+        public T GetComponentInChildren<T>() where T : Component => null;
     }
 
     public class MonoBehaviour : Component
@@ -156,6 +162,8 @@ namespace UnityEngine
 
     public class Coroutine { }
     public class AudioListener : Component { }
+    public enum LightType { Spot, Directional, Point, Area }
+    public class Light : Component { public LightType type { get; set; } }
     public class ScriptableObject : Object { }
 
     public class Texture : Object { }
@@ -233,6 +241,7 @@ namespace UnityEngine
     {
         public static bool isPlaying => false;
         public static bool isBatchMode => false;
+        public static string dataPath => "/project/Assets";
     }
 
     public enum LogType { Error, Assert, Warning, Log, Exception }
@@ -409,4 +418,9 @@ namespace TMPro
         public SubmitEvent onSubmit { get; } = new SubmitEvent();
         public void SetTextWithoutNotify(string v) { text = v; }
     }
+}
+
+namespace UnityEngine.SceneManagement
+{
+    public struct Scene { public string name; public string path; }
 }

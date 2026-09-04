@@ -53,7 +53,7 @@ build() {
 
 echo "Compilando"
 build UnityStubs "${here}"/stubs/UnityEngine.cs "${here}"/stubs/UnityEditor.cs \
-                 "${here}"/stubs/OVR.cs "${here}"/stubs/StubJson.cs
+                 "${here}"/stubs/StubJson.cs
 build TLabStub   -r:"${out}/UnityStubs.dll" "${here}/stubs/TLab.cs"
 
 # Deliberadamente SIN -r:TLabStub.dll: si esto compila, la capa VR no toca el plugin.
@@ -66,8 +66,6 @@ build Integration -r:"${out}/UnityStubs.dll" -r:"${out}/TLabStub.dll" -r:"${out}
                   "${assets}"/VRBrowser/Runtime/Integration/*.cs
 build Editor      -r:"${out}/UnityStubs.dll" -r:"${out}/Runtime.dll" \
                   "${assets}"/VRBrowser/Editor/*.cs
-build App         -r:"${out}/UnityStubs.dll" -r:"${out}/Runtime.dll" \
-                  "${assets}"/App/*.cs
 
 echo
 echo "Ejecutando tests"

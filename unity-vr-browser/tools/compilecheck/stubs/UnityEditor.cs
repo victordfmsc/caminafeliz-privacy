@@ -46,9 +46,16 @@ namespace UnityEditor
     {
         public static void SaveAssets() { }
         public static void Refresh() { }
+        public static string[] FindAssets(string filter) => new string[0];
+        public static string GUIDToAssetPath(string guid) => "";
+        public static T LoadAssetAtPath<T>(string path) where T : UnityEngine.Object => null;
     }
 
-    public static class EditorApplication { public static void Exit(int code) { } }
+    public static class EditorApplication
+    {
+        public static void Exit(int code) { }
+        public static Action delayCall { get; set; }
+    }
 
     [Flags]
     public enum BuildOptions { None = 0, Development = 1, AllowDebugging = 2 }
@@ -82,7 +89,25 @@ namespace UnityEditor
     public static class Selection { public static UnityEngine.Object activeObject { get; set; } }
 
     [AttributeUsage(AttributeTargets.Method)]
-    public class MenuItem : Attribute { public MenuItem(string path) { } }
+    public class MenuItem : Attribute
+    {
+        public MenuItem(string path) { }
+        public int priority { get; set; }
+    }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    public class InitializeOnLoad : Attribute { }
+
+    public static class EditorPrefs
+    {
+        public static bool GetBool(string key, bool fallback) => fallback;
+        public static void SetBool(string key, bool value) { }
+    }
+
+    public static class PrefabUtility
+    {
+        public static UnityEngine.Object InstantiatePrefab(UnityEngine.Object prefab) => new UnityEngine.GameObject();
+    }
 
     public class SerializedObject
     {
@@ -95,6 +120,8 @@ namespace UnityEditor
     {
         public UnityEngine.Object objectReferenceValue { get; set; }
         public string stringValue { get; set; }
+        public bool boolValue { get; set; }
+        public int enumValueIndex { get; set; }
     }
 }
 
@@ -109,14 +136,16 @@ namespace UnityEditor.Events
 
 namespace UnityEditor.SceneManagement
 {
+    using UnityEngine.SceneManagement;
+
     public enum NewSceneSetup { EmptyScene, DefaultGameObjects }
     public enum NewSceneMode { Single, Additive }
-    public class Scene { }
     public static class EditorSceneManager
     {
         public static Scene NewScene(NewSceneSetup setup, NewSceneMode mode) => new Scene();
         public static void MarkSceneDirty(Scene s) { }
         public static bool SaveScene(Scene s, string path) => true;
+        public static Scene OpenScene(string path) => new Scene();
     }
 }
 

@@ -67,7 +67,8 @@ se tocan.
 | `RealityMix` | El deslizante realidad↔vídeo, con crossfade real | n/a |
 | `WebVideoDetector` | Saca la URL del `<video>` de la página vía puente JS | n/a |
 | `ImmersiveModeController` | Alterna panel plano ↔ 360 y pausa el vídeo de la página | n/a |
-| `PrototypeSceneBuilder` | Genera la escena cableada de un clic | n/a |
+| `SceneComposer` | Genera la escena entera cableada, con lo que haya instalado | n/a |
+| `FirstRunSceneBootstrap` | La crea sola al abrir el proyecto por primera vez | n/a |
 
 ## Detalles que cuesta caro descubrir a mano
 
@@ -107,11 +108,20 @@ transparente a pantalla completa, y esquiva el problema conocido de las
 transparencias contra passthrough en underlay. El detalle, y la contrapartida
 (la UI se tiñe), está en [05-passthrough-360.md](05-passthrough-360.md).
 
-`MetaPassthroughController` vive **fuera de todo asmdef**, a propósito: el SDK de
-Meta se instala o como paquete UPM con su propio ensamblado, o desde el Asset
-Store sin ninguno, en cuyo caso `OVRPassthroughLayer` acaba en `Assembly-CSharp`,
-que ningún asmdef puede referenciar. Estar en `Assembly-CSharp` funciona con las
-dos formas de instalación.
+`MetaPassthroughController` habla con `OVRPassthroughLayer` **sin referenciarlo
+en tiempo de compilación**, y eso no es filigrana: el SDK de Meta se instala o
+como paquete UPM con su ensamblado, o desde el Asset Store sin ninguno. Si falta
+o está resolviéndose, una referencia con tipo no compila y **se lleva por delante
+todo el tooling del Editor**, incluido el que existe para decirte que falta el
+SDK. Resolviendo el setter una vez por reflexión, el componente compila en
+cualquier proyecto y falla en ejecución, que es donde el mensaje sirve de algo.
+El coste por frame es nulo: el setter se enlaza a un delegado en la primera
+llamada, y `RealityMix` solo escribe cuando el valor cambia.
+
+Lo mismo hace `SceneComposer` con el rig de Meta y con el motor web: los busca
+por nombre y los configura con `SerializedObject`. Por eso la escena se genera
+igual con los paquetes instalados que sin ellos — y en el segundo caso te dice
+exactamente cuál falta, en vez de reventar.
 
 ## Sobre paneles curvos
 
